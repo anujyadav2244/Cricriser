@@ -373,12 +373,14 @@ public class MatchScoreService {
     }
 
     @Transactional
-    public void deleteScoreById(String id) {
+    public void deleteScoreByMatchId(String matchId) {
 
-        MatchScore score = matchScoreRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Match score not found"));
+        MatchScore score = matchScoreRepository.findByMatchId(matchId);
 
-        String matchId = score.getMatchId();
+        if (score == null) {
+            throw new RuntimeException("Match score not found");
+        }
+
         String leagueId = score.getLeagueId();
 
         // DELETE BALL-BY-BALL
@@ -388,7 +390,7 @@ public class MatchScoreService {
         repo.deleteByMatchId(matchId);
 
         // DELETE MATCH SCORE
-        matchScoreRepository.deleteById(id);
+        matchScoreRepository.deleteById(score.getId());
 
         // UPDATE POINTS TABLE
         pointsTableService.updatePointsTable(leagueId);

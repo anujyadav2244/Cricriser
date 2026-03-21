@@ -87,10 +87,9 @@ public class MatchScoreController {
         return ResponseEntity.ok(matchScoreService.getAllScores());
     }
 
-    // ================= DELETE BY ID =================
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteScore(@PathVariable String id) {
-        matchScoreService.deleteScoreById(id);
+    @DeleteMapping("/delete/{matchId}")
+    public ResponseEntity<?> deleteScore(@PathVariable String matchId) {
+        matchScoreService.deleteScoreByMatchId(matchId);
         return ResponseEntity.ok("Match score deleted successfully.");
     }
 

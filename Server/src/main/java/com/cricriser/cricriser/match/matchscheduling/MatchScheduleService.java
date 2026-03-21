@@ -211,11 +211,13 @@ public class MatchScheduleService {
         TeamWithPlayersDTO team1Dto = new TeamWithPlayersDTO();
         team1Dto.setId(team1.getId());
         team1Dto.setName(team1.getName());
+        team1Dto.setCoach(team1.getCoach());
         team1Dto.setSquad(team1Players);
 
         TeamWithPlayersDTO team2Dto = new TeamWithPlayersDTO();
         team2Dto.setId(team2.getId());
         team2Dto.setName(team2.getName());
+        team2Dto.setCoach(team2.getCoach());
         team2Dto.setSquad(team2Players);
 
         // 5️⃣ Final response

@@ -23,6 +23,17 @@ public class BattingStateService {
             throw new RuntimeException("outBatterId must be set on wicket");
         }
 
+        String strikerAtBallStart = score.getStrikerId();
+        String nonStrikerAtBallStart = score.getNonStrikerId();
+
+        if (strikerAtBallStart == null || nonStrikerAtBallStart == null) {
+            throw new RuntimeException("Striker / non-striker not set");
+        }
+
+        if (!outId.equals(strikerAtBallStart) && !outId.equals(nonStrikerAtBallStart)) {
+            throw new RuntimeException("outBatterId must be current striker or non-striker");
+        }
+
         boolean team1Batting
                 = score.getBattingTeamId().equals(score.getTeam1Id());
 
@@ -52,13 +63,63 @@ public class BattingStateService {
             throw new RuntimeException("New batter must be from yet-to-bat list");
         }
 
-        if (outId.equals(score.getStrikerId())) {
+        if ("RUN_OUT".equals(normalizeWicketType(ball.getWicketType()))) {
+            String runOutEnd = normalizeRunOutEnd(ball.getRunOutEnd());
+            if (runOutEnd == null) {
+                throw new RuntimeException("runOutEnd is mandatory for Run Out");
+            }
+
+            String survivingBatter = outId.equals(strikerAtBallStart)
+                    ? nonStrikerAtBallStart
+                    : strikerAtBallStart;
+
+            if ("STRIKER".equals(runOutEnd)) {
+                score.setStrikerId(newBatter);
+                score.setNonStrikerId(survivingBatter);
+            } else {
+                score.setStrikerId(survivingBatter);
+                score.setNonStrikerId(newBatter);
+            }
+        } else if (outId.equals(strikerAtBallStart)) {
             score.setStrikerId(newBatter);
         } else {
             score.setNonStrikerId(newBatter);
         }
 
         yetToBat.remove(newBatter);
+    }
+
+    private String normalizeWicketType(String rawWicketType) {
+        if (rawWicketType == null || rawWicketType.isBlank()) {
+            return null;
+        }
+
+        String normalized = rawWicketType.trim()
+                .toUpperCase()
+                .replace('-', '_')
+                .replace(' ', '_');
+
+        return switch (normalized) {
+            case "RUNOUT" -> "RUN_OUT";
+            default -> normalized;
+        };
+    }
+
+    private String normalizeRunOutEnd(String rawRunOutEnd) {
+        if (rawRunOutEnd == null || rawRunOutEnd.isBlank()) {
+            return null;
+        }
+
+        String normalized = rawRunOutEnd.trim()
+                .toUpperCase()
+                .replace('-', '_')
+                .replace(' ', '_');
+
+        return switch (normalized) {
+            case "S", "STRIKER", "STRIKER_END" -> "STRIKER";
+            case "NS", "NON_STRIKER", "NON_STRIKER_END", "NONSTRIKER" -> "NON_STRIKER";
+            default -> null;
+        };
     }
 
 }

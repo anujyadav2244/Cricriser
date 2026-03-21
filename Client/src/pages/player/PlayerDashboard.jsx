@@ -1,5 +1,6 @@
 import { useOutletContext } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { humanizeText } from "@/lib/utils";
 
 export default function PlayerDashboard() {
   const { player } = useOutletContext();
@@ -19,7 +20,7 @@ export default function PlayerDashboard() {
           <CardContent className="space-y-2">
             <p><b>Name : </b> {player.name}</p>
             <p><b>Email : </b> {player.authEmail}</p>
-            <p><b>Role : </b> {player.role}</p>
+            <p><b>Role : </b> {humanizeText(player.role) || "-"}</p>
             <p><b>Batting Style : </b> {player.battingStyle || "—"}</p>
             <p><b>Bowling Type : </b> {player.bowlingType || "—"}</p>
             <p><b>Bowling Hand : </b>{player.bowlingHand || "_"}</p>

@@ -160,17 +160,28 @@ export default function BallInputPanel({
         return;
       }
 
+      const selectedRuns = runs ?? 0;
+      const sendSelectedRuns =
+        ballType === "RUN"
+        || (ballType === "NO_BALL" && boundaryRuns === null)
+        || wicketType === "RUN_OUT";
+
       const payload = {
         matchId: matchScore.matchId,
         innings: matchScore.innings,
 
         // ✅ Bat runs
-        runs: ballType === "RUN" ? (runs ?? 0) : 0,
+        runs: sendSelectedRuns ? selectedRuns : 0,
 
         // ✅ Boundary mapping
         boundary: ballType === "BOUNDARY" || (ballType === "NO_BALL" && boundaryRuns !== null),
         boundaryRuns: (ballType === "BOUNDARY" || ballType === "NO_BALL") ? (boundaryRuns ?? 0) : 0,
-        runningRuns: (ballType === "BOUNDARY" || ballType === "NO_BALL") ? runningRuns : 0,
+        runningRuns:
+          (ballType === "BOUNDARY" || (ballType === "NO_BALL" && boundaryRuns !== null))
+            ? runningRuns
+            : sendSelectedRuns
+            ? selectedRuns
+            : 0,
 
         // ✅ Extras
         extraType:

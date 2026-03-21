@@ -50,7 +50,7 @@ public class BallByBallController {
             ball.setWicket(request.isWicket());
             ball.setWicketType(request.getWicketType());
 
-// ✅ REQUIRED FOR RUN OUT
+        // ✅ REQUIRED FOR RUN OUT
             ball.setOutBatterId(request.getOutBatterId());
             ball.setRunOutEnd(request.getRunOutEnd());
 

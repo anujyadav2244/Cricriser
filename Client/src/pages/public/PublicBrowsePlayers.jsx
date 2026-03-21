@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import api from "@/api/axios";
+import { humanizeText } from "@/lib/utils";
 
 export default function PublicBrowsePlayers() {
   const navigate = useNavigate();
@@ -155,7 +156,7 @@ export default function PublicBrowsePlayers() {
                   <div className="min-w-0">
                     <p className="font-semibold text-slate-900 truncate">{player.name || "Unnamed Player"}</p>
                     <p className="text-xs text-slate-600 truncate">
-                      {player.teamName || "-"} {player.role ? `| ${player.role}` : ""}
+                      {player.teamName || "-"} {player.role ? `| ${humanizeText(player.role)}` : ""}
                     </p>
                   </div>
                 </CardContent>

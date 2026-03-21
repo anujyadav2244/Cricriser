@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { humanizeText } from "@/lib/utils";
 
 export default function SquadSection({ scoreboard }) {
   const { playingXI } = scoreboard;
@@ -14,7 +15,7 @@ export default function SquadSection({ scoreboard }) {
             <ul className="text-sm text-[#475569] space-y-1">
               {players.map((p) => (
                 <li key={p.id}>
-                  {p.name} ({p.role})
+                  {p.name} ({humanizeText(p.role)})
                 </li>
               ))}
             </ul>

@@ -85,6 +85,9 @@ public class BallByBallService {
         playerValidationService.validateBowler(ball);
         playerValidationService.validateBatters(ball, score);
 
+        // ================= RUN-OUT RUNS FALLBACK =================
+        normalizeRunOutRuns(ball);
+
         // ================= NORMALIZE EXTRAS (INLINE) =================
         String extra = normalizeExtraType(ball.getExtraType());
         if (extra == null) {
@@ -111,8 +114,11 @@ public class BallByBallService {
                         ball.setExtraRuns(0);
                     }
                     // Frontend may send bye/leg-bye in runs instead of extraRuns.
-                    if (ball.getExtraRuns() == 0 && ball.getRuns() > 0) {
-                        ball.setExtraRuns(ball.getRuns());
+                    if (ball.getExtraRuns() == 0) {
+                        int byeRuns = Math.max(ball.getRuns(), ball.getRunningRuns());
+                        if (byeRuns > 0) {
+                            ball.setExtraRuns(byeRuns);
+                        }
                     }
                     ball.setRuns(0);
                 }
@@ -271,6 +277,48 @@ public class BallByBallService {
             case "LB", "LEG_BYE", "LEGBYE", "LEG_BYES" -> "LEG_BYE";
             default -> null;
         };
+    }
+
+    private String normalizeWicketType(String rawWicketType) {
+        if (rawWicketType == null || rawWicketType.isBlank()) {
+            return null;
+        }
+
+        String normalized = rawWicketType.trim()
+                .toUpperCase()
+                .replace('-', '_')
+                .replace(' ', '_');
+
+        return switch (normalized) {
+            case "RUNOUT" -> "RUN_OUT";
+            case "HITWICKET" -> "HIT_WICKET";
+            default -> normalized;
+        };
+    }
+
+    private void normalizeRunOutRuns(BallByBall ball) {
+        if (!ball.isWicket()
+                || !"RUN_OUT".equals(normalizeWicketType(ball.getWicketType()))) {
+            return;
+        }
+
+        int clickedRuns = Math.max(ball.getRuns(), ball.getRunningRuns());
+        String extraType = normalizeExtraType(ball.getExtraType());
+
+        // Defensive fallback: some clients post clicked run in extraRuns for plain run-out.
+        if (clickedRuns == 0 && extraType == null && ball.getExtraRuns() > 0) {
+            clickedRuns = ball.getExtraRuns();
+            ball.setExtraRuns(0);
+        }
+
+        if (clickedRuns > 0) {
+            if (ball.getRuns() == 0) {
+                ball.setRuns(clickedRuns);
+            }
+            if (ball.getRunningRuns() == 0) {
+                ball.setRunningRuns(clickedRuns);
+            }
+        }
     }
 
 }

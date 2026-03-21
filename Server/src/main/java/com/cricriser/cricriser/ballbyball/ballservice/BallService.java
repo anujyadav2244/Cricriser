@@ -34,17 +34,17 @@ public class BallService {
             throw new RuntimeException("Bowler not set");
         }
 
-        if (ball.getRuns() < 0 || ball.getExtraRuns() < 0) {
+        if (ball.getRuns() < 0 || ball.getExtraRuns() < 0 || ball.getRunningRuns() < 0) {
             throw new RuntimeException("Runs cannot be negative");
         }
 
-        // 🔥 CRITICAL FIX
-        // Always sync UI runs → internal runningRuns
-        ball.setRunningRuns(ball.getRuns());
+        // Keep explicit runningRuns from UI (run-out can send only runningRuns).
+        if (ball.getRunningRuns() == 0 && ball.getRuns() > 0) {
+            ball.setRunningRuns(ball.getRuns());
+        }
 
-        // Normalize boundary AFTER runs
+        // Normalize boundary AFTER runs.
         normalizeBoundary(ball);
-
     }
 
     private void normalizeBoundary(BallByBall ball) {
@@ -55,7 +55,7 @@ public class BallService {
                 throw new RuntimeException("Boundary runs must be 4 or 6");
             }
 
-            // Six cannot have overthrow
+            // Six cannot have overthrow.
             if (ball.getBoundaryRuns() == 6 && ball.isOverthrowBoundary()) {
                 throw new RuntimeException("Overthrow cannot occur on six");
             }
@@ -107,35 +107,27 @@ public class BallService {
         boolean isBye = "BYE".equals(extraType);
         boolean isLegBye = "LEG_BYE".equals(extraType);
 
-        // ================= NO_BALL / WIDE base run =================
-        // Both give 1 automatic run to the batting team
+        // NO_BALL / WIDE base run.
         if (isNoBall || isWide) {
             total += 1;
         }
 
-        // ================= BAT RUNS =================
-        // Runs off the bat (applicable on all deliveries except pure wides)
-        // On NO_BALL: batter CAN hit and score (e.g., no-ball boundary)
-        // On WIDE: batter CANNOT score off the bat (runs ignored)
+        // Some clients send completed runs in runningRuns (especially with run-out).
+        int completedRuns = ball.getRuns() > 0
+                ? ball.getRuns()
+                : ball.getRunningRuns();
+
+        // Bat/running runs apply except wide/bye/leg-bye.
         if (!isWide && !isBye && !isLegBye) {
-            total += ball.getRuns();
+            total += completedRuns;
         }
 
-        // ================= BOUNDARY RUNS =================
-        // If a boundary is hit, add the boundary runs (4 or 6)
         if (ball.isBoundary()) {
             total += ball.getBoundaryRuns();
         }
 
-        // ================= EXTRA RUNS =================
-        // On NO_BALL: byes/leg-byes can occur (additional to mandatory 1)
-        // On WIDE: additional runs beyond mandatory 1 (byes/leg-byes)
-        // On BYE/LEG_BYE: the runs themselves
-        // On normal delivery: penalty runs
         total += ball.getExtraRuns();
 
-        // ================= OVERTHROW =================
-        // If boundary came via overthrow, add 4 more runs
         if (ball.isOverthrowBoundary()) {
             total += 4;
         }
@@ -208,5 +200,4 @@ public class BallService {
             default -> normalized;
         };
     }
-
 }

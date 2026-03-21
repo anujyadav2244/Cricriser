@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import LiveScoringPanel from "./LiveScoringPanel";
 import { Card, CardContent } from "@/components/ui/card";
+import { humanizeText } from "@/lib/utils";
 
 export default function Scorecard({
   matchId,
@@ -11,6 +12,38 @@ export default function Scorecard({
   const [activeTab, setActiveTab] = useState("LIVE");
   const [allStats, setAllStats] = useState([]);
   const [commentary, setCommentary] = useState([]);
+
+  const getBallOrderValue = (ball) => {
+    const seq = Number(ball?.ballSequence ?? ball?.sequence ?? 0);
+    if (Number.isFinite(seq) && seq > 0) return seq;
+
+    const timeCandidate = ball?.timestamp || ball?.createdAt || ball?.updatedAt;
+    const millis = timeCandidate ? new Date(timeCandidate).getTime() : NaN;
+    if (Number.isFinite(millis) && millis > 0) return millis;
+
+    const objectId = String(ball?.id || ball?._id || "");
+    if (/^[a-fA-F0-9]{24}$/.test(objectId)) {
+      return parseInt(objectId.slice(0, 8), 16);
+    }
+
+    return 0;
+  };
+
+  const compareBallsDesc = (a, b) => {
+    const inningsDiff = Number(b?.innings || 0) - Number(a?.innings || 0);
+    if (inningsDiff !== 0) return inningsDiff;
+
+    const overDiff = Number(b?.over || 0) - Number(a?.over || 0);
+    if (overDiff !== 0) return overDiff;
+
+    const ballDiff = Number(b?.ball || 0) - Number(a?.ball || 0);
+    if (ballDiff !== 0) return ballDiff;
+
+    const orderDiff = getBallOrderValue(b) - getBallOrderValue(a);
+    if (orderDiff !== 0) return orderDiff;
+
+    return Number(b?.ballSequence || b?.timestamp || 0) - Number(a?.ballSequence || a?.timestamp || 0);
+  };
 
   /* ================= PLAYER NAME ================= */
 
@@ -48,49 +81,64 @@ export default function Scorecard({
       case "RUN_OUT":
         return `run out (${fielder})`;
       default:
-        return b.dismissalType?.toLowerCase() || "";
+        return humanizeText(b.dismissalType) || "";
     }
   };
 
   /* ================= FETCH STATS ================= */
 
   const fetchStats = async () => {
-    const token = localStorage.getItem("token");
-    const res = await fetch(
-      `http://localhost:8080/api/match-player-stats/match/${matchId}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    setAllStats(await res.json());
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `http://localhost:8080/api/match-player-stats/match/${matchId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (!res.ok) {
+        setAllStats([]);
+        return;
+      }
+
+      const data = await res.json();
+      setAllStats(Array.isArray(data) ? data : []);
+    } catch {
+      setAllStats([]);
+    }
   };
 
   /* ================= FETCH COMMENTARY ================= */
 
   const fetchCommentary = async () => {
-    const token = localStorage.getItem("token");
-    const res = await fetch(
-      `http://localhost:8080/api/ball-by-ball/match/${matchId}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `http://localhost:8080/api/ball-by-ball/match/${matchId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    const data = await res.json();
+      if (!res.ok) {
+        setCommentary([]);
+        return;
+      }
 
-    const sorted = [...data].sort((a, b) => {
-      if (a.innings !== b.innings) return b.innings - a.innings;
-      if (a.over !== b.over) return b.over - a.over;
-      return b.ball - a.ball;
-    });
+      const data = await res.json();
+      const list = Array.isArray(data) ? data : [];
 
-    setCommentary(sorted);
+      const sorted = [...list].sort(compareBallsDesc);
+
+      setCommentary(sorted);
+    } catch {
+      setCommentary([]);
+    }
   };
 
   useEffect(() => {
+    setCommentary([]);
+    setAllStats([]);
+    setActiveTab("LIVE");
+
     if (matchScore) {
-      // ✅ Reset state before fetching new data
-      setCommentary([]);
-      setAllStats([]);
-      setActiveTab("LIVE");
-      
-      // Then fetch new data
       fetchStats();
       fetchCommentary();
     }
@@ -101,9 +149,35 @@ export default function Scorecard({
   const generateCommentary = (ball) => {
     const batter = getPlayerName(ball.batterId);
     const bowler = getPlayerName(ball.bowlerId);
+    const wicketType = String(ball?.wicketType || "").toUpperCase();
+    const extraType = String(ball?.extraType || "").toUpperCase();
+    const getNoBallTotalRuns = () => {
+      const batRuns = Number(ball?.runs || 0);
+      const boundaryRuns = Number(ball?.boundaryRuns || 0);
+      const extraRuns = Number(ball?.extraRuns || 0);
+      const overthrowRuns = ball?.overthrowBoundary ? 4 : 0;
+      return 1 + batRuns + boundaryRuns + extraRuns + overthrowRuns;
+    };
+
+    if (extraType === "NO_BALL" || extraType === "NB") {
+      const totalRuns = getNoBallTotalRuns();
+      const runOutText =
+        ball?.wicket && wicketType === "RUN_OUT"
+          ? " + Run Out"
+          : "";
+      return `${bowler} to ${batter}, NB + ${totalRuns} run${totalRuns > 1 ? "s" : ""}${runOutText}`;
+    }
+
+    if (ball.wicket && wicketType === "RUN_OUT") {
+      const runs = Number(ball?.runs || ball?.boundaryRuns || 0);
+      if (runs > 0) {
+        return `${bowler} to ${batter}, ${runs} run${runs > 1 ? "s" : ""} + Run Out`;
+      }
+      return `${bowler} to ${batter}, Run Out`;
+    }
 
     if (ball.wicket) {
-      return `${bowler} to ${batter}, OUT! ${ball.wicketType}`;
+      return `${bowler} to ${batter}, OUT! ${humanizeText(ball.wicketType)}`;
     }
 
     if (ball.boundaryRuns === 6) {
@@ -118,8 +192,14 @@ export default function Scorecard({
       return `${bowler} to ${batter}, WIDE`;
     }
 
-    if (ball.extraType === "NO_BALL") {
-      return `${bowler} to ${batter}, NO BALL`;
+    if (extraType === "LEG_BYE" || extraType === "LB") {
+      const runs = Number(ball?.extraRuns ?? ball?.runs ?? 0);
+      return `${bowler} to ${batter}, ${runs} run${runs > 1 ? "s" : ""} leg bye`;
+    }
+
+    if (extraType === "BYE" || extraType === "B") {
+      const runs = Number(ball?.extraRuns ?? ball?.runs ?? 0);
+      return `${bowler} to ${batter}, ${runs} run${runs > 1 ? "s" : ""} bye`;
     }
 
     if (ball.runs > 0) {
@@ -179,10 +259,11 @@ export default function Scorecard({
   /* ================= INSERT INNINGS BREAK ================= */
 
   const buildCommentaryWithBreak = () => {
+    const sorted = [...commentary].sort(compareBallsDesc);
     const result = [];
     let lastInnings = null;
 
-    commentary.forEach((ball) => {
+    sorted.forEach((ball) => {
       if (lastInnings !== null && ball.innings !== lastInnings) {
         result.push({ type: "INNINGS_BREAK" });
       }
@@ -288,16 +369,53 @@ export default function Scorecard({
       .sort((a, b) => {
         if ((a.innings || 0) !== (b.innings || 0)) return (a.innings || 0) - (b.innings || 0);
         if ((a.over || 0) !== (b.over || 0)) return (a.over || 0) - (b.over || 0);
-        return (a.ball || 0) - (b.ball || 0);
+        if ((a.ball || 0) !== (b.ball || 0)) return (a.ball || 0) - (b.ball || 0);
+        return Number(a.ballSequence || a.timestamp || 0) - Number(b.ballSequence || b.timestamp || 0);
       });
 
-    const fallOfWickets = inningsBalls
-      .filter((b) => b.wicket)
-      .map((b) => ({
-        player: getPlayerName(b.outBatterId),
-        score: `${b.totalRunsAtBall ?? runs}-${b.totalWicketsAtBall ?? ""}`.replace(/-$/, ""),
-        over: `${b.over}.${b.ball}`,
-      }));
+    const getBallTotalRuns = (ball) => {
+      const extraType = String(ball?.extraType || "").toUpperCase();
+      const isWide = extraType === "WIDE" || extraType === "WD";
+      const isNoBall = extraType === "NO_BALL" || extraType === "NB";
+      const isBye = extraType === "BYE" || extraType === "B";
+      const isLegBye = extraType === "LEG_BYE" || extraType === "LB";
+
+      let total = 0;
+
+      if (isWide || isNoBall) {
+        total += 1;
+      }
+
+      if (!isWide && !isBye && !isLegBye) {
+        total += Number(ball?.runs || 0);
+      }
+
+      total += Number(ball?.boundaryRuns || 0);
+      total += Number(ball?.extraRuns || 0);
+
+      if (ball?.overthrowBoundary) {
+        total += 4;
+      }
+
+      return total;
+    };
+
+    const fallOfWickets = [];
+    let cumulativeRuns = 0;
+    let cumulativeWickets = 0;
+
+    inningsBalls.forEach((ball) => {
+      cumulativeRuns += getBallTotalRuns(ball);
+
+      if (ball?.wicket) {
+        cumulativeWickets += 1;
+        fallOfWickets.push({
+          player: getPlayerName(ball.outBatterId || ball.batterId),
+          score: `${cumulativeRuns}-${cumulativeWickets}`,
+          over: `${ball.over}.${ball.ball}`,
+        });
+      }
+    });
 
     // Calculate run rate
     const oversDecimal = parseFloat(overs) || 0;
@@ -603,3 +721,4 @@ export default function Scorecard({
     </Card>
   );
 }
+

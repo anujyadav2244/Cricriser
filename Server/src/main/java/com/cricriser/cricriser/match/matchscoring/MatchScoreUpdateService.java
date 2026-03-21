@@ -87,6 +87,7 @@ public class MatchScoreUpdateService {
                 = score.getBattingTeamId().equals(score.getTeam1Id());
 
         int runs = ballService.calculateTotalRuns(ball);
+        runs = Math.max(runs, getMinimumRunOutRuns(ball));
 
         // ================= RUNS =================
         if (team1Batting) {
@@ -97,6 +98,7 @@ public class MatchScoreUpdateService {
 
         // ================= EXTRAS =================
         int extras = ballService.calculateExtrasForScoreboard(ball);
+        extras = Math.max(extras, getMinimumRunOutExtras(ball));
         if (extras > 0) {
             if (team1Batting) {
                 score.setTeam1Extras(score.getTeam1Extras() + extras);
@@ -215,5 +217,91 @@ public class MatchScoreUpdateService {
                     "Ball update allowed only on match date (" + matchDate + ")"
             );
         }
+    }
+
+    private int getMinimumRunOutRuns(BallByBall ball) {
+        if (!ball.isWicket() || !"RUN_OUT".equals(normalizeWicketType(ball.getWicketType()))) {
+            return 0;
+        }
+
+        int completedRuns = getClickedRuns(ball);
+        String extraType = normalizeExtraType(ball.getExtraType());
+
+        if ("WIDE".equals(extraType)) {
+            return 1 + Math.max(ball.getExtraRuns(), completedRuns);
+        }
+
+        if ("BYE".equals(extraType) || "LEG_BYE".equals(extraType)) {
+            return Math.max(ball.getExtraRuns(), completedRuns);
+        }
+
+        return completedRuns;
+    }
+
+    private int getMinimumRunOutExtras(BallByBall ball) {
+        if (!ball.isWicket() || !"RUN_OUT".equals(normalizeWicketType(ball.getWicketType()))) {
+            return 0;
+        }
+
+        int completedRuns = getClickedRuns(ball);
+        String extraType = normalizeExtraType(ball.getExtraType());
+
+        if ("WIDE".equals(extraType)) {
+            return 1 + Math.max(ball.getExtraRuns(), completedRuns);
+        }
+
+        if ("BYE".equals(extraType) || "LEG_BYE".equals(extraType)) {
+            return Math.max(ball.getExtraRuns(), completedRuns);
+        }
+
+        return 0;
+    }
+
+    private int getClickedRuns(BallByBall ball) {
+        int clickedRuns = Math.max(ball.getRuns(), ball.getRunningRuns());
+        String extraType = normalizeExtraType(ball.getExtraType());
+
+        // Defensive fallback for clients that post run-out clicked run in extraRuns.
+        if (clickedRuns == 0 && extraType == null && ball.getExtraRuns() > 0) {
+            return ball.getExtraRuns();
+        }
+
+        return clickedRuns;
+    }
+
+    private String normalizeWicketType(String rawWicketType) {
+        if (rawWicketType == null || rawWicketType.isBlank()) {
+            return null;
+        }
+
+        String normalized = rawWicketType.trim()
+                .toUpperCase()
+                .replace('-', '_')
+                .replace(' ', '_');
+
+        return switch (normalized) {
+            case "RUNOUT" -> "RUN_OUT";
+            case "HITWICKET" -> "HIT_WICKET";
+            default -> normalized;
+        };
+    }
+
+    private String normalizeExtraType(String rawExtraType) {
+        if (rawExtraType == null || rawExtraType.isBlank()) {
+            return null;
+        }
+
+        String normalized = rawExtraType.trim()
+                .toUpperCase()
+                .replace('-', '_')
+                .replace(' ', '_');
+
+        return switch (normalized) {
+            case "W", "WD", "WIDE", "WIDES" -> "WIDE";
+            case "NB", "NO_BALL", "NOBALL", "NO_BALLS" -> "NO_BALL";
+            case "B", "BYE", "BYES" -> "BYE";
+            case "LB", "LEG_BYE", "LEGBYE", "LEG_BYES" -> "LEG_BYE";
+            default -> normalized;
+        };
     }
 }

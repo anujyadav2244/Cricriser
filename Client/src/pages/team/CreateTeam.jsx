@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { X } from "lucide-react";
 import axios from "@/api/axios";
+import { humanizeText } from "@/lib/utils";
 
 export default function CreateTeam() {
   const navigate = useNavigate();
@@ -213,7 +214,7 @@ export default function CreateTeam() {
                   />
                   <div>
                     <p className="text-sm font-medium">{p.name}</p>
-                    <p className="text-xs text-slate-500">{p.role}</p>
+                    <p className="text-xs text-slate-500">{humanizeText(p.role) || "-"}</p>
                   </div>
                 </div>
               ))}

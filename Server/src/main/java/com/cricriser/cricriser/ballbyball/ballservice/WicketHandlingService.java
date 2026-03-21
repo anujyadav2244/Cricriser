@@ -24,7 +24,7 @@ public class WicketHandlingService {
             throw new RuntimeException("wicketType is mandatory when isWicket is true");
         }
 
-        wicketType = wicketType.toUpperCase();
+        wicketType = normalizeWicketType(wicketType);
         ball.setWicketType(wicketType);
 
         // ================= STUMPED CANNOT BE ON NO_BALL (BUT CAN BE ON WIDE) =================
@@ -44,8 +44,19 @@ public class WicketHandlingService {
                         "outBatterId and runOutEnd are mandatory for Run Out"
                 );
             }
+            String normalizedRunOutEnd = normalizeRunOutEnd(ball.getRunOutEnd());
+            if (normalizedRunOutEnd == null) {
+                throw new RuntimeException("Invalid runOutEnd. Use STRIKER or NON_STRIKER");
+            }
+            ball.setRunOutEnd(normalizedRunOutEnd);
 
             outBatterId = ball.getOutBatterId();
+            if (!outBatterId.equals(score.getStrikerId())
+                    && !outBatterId.equals(score.getNonStrikerId())) {
+                throw new RuntimeException(
+                        "For Run Out, outBatterId must be current striker or non-striker"
+                );
+            }
 
         } // ================= OTHER WICKETS =================
         else {
@@ -79,6 +90,36 @@ public class WicketHandlingService {
                 score.getCurrentBowlerId(),
                 ball.getFielderId()
         );
+    }
+
+    private String normalizeWicketType(String rawWicketType) {
+        String normalized = rawWicketType.trim()
+                .toUpperCase()
+                .replace('-', '_')
+                .replace(' ', '_');
+
+        return switch (normalized) {
+            case "RUNOUT" -> "RUN_OUT";
+            case "HITWICKET" -> "HIT_WICKET";
+            default -> normalized;
+        };
+    }
+
+    private String normalizeRunOutEnd(String rawRunOutEnd) {
+        if (rawRunOutEnd == null || rawRunOutEnd.isBlank()) {
+            return null;
+        }
+
+        String normalized = rawRunOutEnd.trim()
+                .toUpperCase()
+                .replace('-', '_')
+                .replace(' ', '_');
+
+        return switch (normalized) {
+            case "S", "STRIKER", "STRIKER_END" -> "STRIKER";
+            case "NS", "NON_STRIKER", "NON_STRIKER_END", "NONSTRIKER" -> "NON_STRIKER";
+            default -> null;
+        };
     }
 
 }

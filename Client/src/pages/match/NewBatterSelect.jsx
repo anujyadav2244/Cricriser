@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import api from "@/api/axios";
 import { toast } from "sonner";
+import { humanizeText } from "@/lib/utils";
 
 export default function NewBatterSelect() {
   const { matchId } = useParams();
@@ -97,7 +98,7 @@ export default function NewBatterSelect() {
             >
               <div className="font-medium">{player.name}</div>
               <div className="text-xs text-slate-400">
-                Role: {player.role}
+                Role: {humanizeText(player.role) || "-"}
               </div>
             </div>
           ))}

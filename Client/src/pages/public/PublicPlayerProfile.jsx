@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useParams, useSearchParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import api from "@/api/axios";
+import { humanizeText } from "@/lib/utils";
 
 export default function PublicPlayerProfile() {
   const { playerId } = useParams();
@@ -119,7 +120,7 @@ export default function PublicPlayerProfile() {
 
   const infoRows = [
     { label: "Name", value: player?.name || "-" },
-    { label: "Role", value: player?.role || "-" },
+    { label: "Role", value: humanizeText(player?.role) || "-" },
     { label: "Batting Style", value: player?.battingStyle || "-" },
     { label: "Bowling Type", value: player?.bowlingType || "-" },
     { label: "Bowling Style", value: player?.bowlingStyle || "-" },
@@ -144,7 +145,7 @@ export default function PublicPlayerProfile() {
               />
               <div>
                 <h1 className="text-3xl font-bold">{player?.name || "Player Profile"}</h1>
-                <p className="text-emerald-100">{player?.role || "-"}</p>
+                <p className="text-emerald-100">{humanizeText(player?.role) || "-"}</p>
               </div>
             </div>
           </div>

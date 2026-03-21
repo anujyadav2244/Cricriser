@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ export default function LiveScoring() {
   const [submitting, setSubmitting] = useState(false);
   const [selectedExtra, setSelectedExtra] = useState(null);
   const [selectedExtraRuns, setSelectedExtraRuns] = useState(null);
+  const [showBoundaryRuns, setShowBoundaryRuns] = useState(false);
 
   useEffect(() => {
     fetchScoreboard();
@@ -46,6 +48,7 @@ export default function LiveScoring() {
       // Reset extra selection
       setSelectedExtra(null);
       setSelectedExtraRuns(null);
+      setShowBoundaryRuns(false);
 
       await fetchScoreboard();
     } catch (err) {
@@ -97,6 +100,59 @@ export default function LiveScoring() {
               </Button>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* ================= BOUNDARY ================= */}
+      <Card className="bg-[#020617]">
+        <CardContent className="p-4 space-y-4">
+          <h3 className="font-semibold text-orange-400">Boundary</h3>
+
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              disabled={submitting}
+              variant={showBoundaryRuns ? "default" : "outline"}
+              onClick={() => setShowBoundaryRuns((prev) => !prev)}
+            >
+              4
+            </Button>
+
+            <Button
+              disabled={submitting}
+              onClick={() =>
+                submitBall({
+                  runsOffBat: 6,
+                  legalBall: true
+                })
+              }
+            >
+              6
+            </Button>
+          </div>
+
+          {showBoundaryRuns && (
+            <div>
+              <p className="text-sm text-slate-300 mb-2">
+                Running Runs After Boundary 4
+              </p>
+              <div className="grid grid-cols-4 gap-2">
+                {[1, 2, 3, 4].map((r) => (
+                  <Button
+                    key={r}
+                    disabled={submitting}
+                    onClick={() =>
+                      submitBall({
+                        runsOffBat: 4 + r,
+                        legalBall: true
+                      })
+                    }
+                  >
+                    {r}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

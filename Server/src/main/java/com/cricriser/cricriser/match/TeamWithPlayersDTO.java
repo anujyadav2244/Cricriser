@@ -7,5 +7,6 @@ import lombok.Data;
 public class TeamWithPlayersDTO {
     private String id;
     private String name;
+    private String coach;
     private List<PlayerDTO> squad;
 }

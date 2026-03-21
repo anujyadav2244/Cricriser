@@ -38,7 +38,7 @@ export default function MatchScoreboard() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      if (scoreRes.status === 204) {
+      if (!scoreRes.ok || scoreRes.status === 204) {
         setScore(null);
       } else {
         const text = await scoreRes.text();
@@ -52,13 +52,23 @@ export default function MatchScoreboard() {
   };
 
   const refreshScore = async () => {
-    const token = localStorage.getItem("token");
-    const res = await fetch(
-      `http://localhost:8080/api/match/score/${matchId}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    const text = await res.text();
-    setScore(text ? JSON.parse(text) : null);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `http://localhost:8080/api/match/score/${matchId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (!res.ok || res.status === 204) {
+        setScore(null);
+        return;
+      }
+
+      const text = await res.text();
+      setScore(text ? JSON.parse(text) : null);
+    } catch {
+      setScore(null);
+    }
   };
 
   /* ================= LOADING / ERROR ================= */

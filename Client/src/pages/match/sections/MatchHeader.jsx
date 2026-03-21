@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { humanizeText } from "@/lib/utils";
 
 export default function MatchHeader({ scoreboard }) {
   const { teamA, teamB, venue, leagueName, status } = scoreboard;
@@ -16,7 +17,7 @@ export default function MatchHeader({ scoreboard }) {
 
         <div className="inline-block mt-2 px-3 py-1 rounded-full text-sm
                         bg-[#F97316] text-white">
-          {status}
+          {humanizeText(status)}
         </div>
       </CardContent>
     </Card>

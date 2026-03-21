@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { humanizeText } from "@/lib/utils";
 
 export default function AddMatchScoreForm({
   matchDetails,
@@ -236,7 +237,7 @@ function TeamSelector({ title, squad, selected, onToggle }) {
               <span>
                 {p.name}
                 <span className="text-xs ml-2 opacity-70">
-                  ({p.role})
+                  ({humanizeText(p.role)})
                 </span>
               </span>
 

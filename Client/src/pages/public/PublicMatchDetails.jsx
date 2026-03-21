@@ -1,12 +1,21 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import api from "@/api/axios";
+import { humanizeText } from "@/lib/utils";
+
+const ALLOWED_TABS = ["LIVE", "SCORECARD", "SQUADS", "POINTS"];
+const resolveTab = (value) => {
+  const normalized = String(value || "").toUpperCase();
+  const mapped = normalized === "SQUAD" ? "SQUADS" : normalized;
+  return ALLOWED_TABS.includes(mapped) ? mapped : "LIVE";
+};
 
 export default function PublicMatchDetails() {
   const { matchId } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [match, setMatch] = useState(null);
   const [league, setLeague] = useState(null);
@@ -17,11 +26,60 @@ export default function PublicMatchDetails() {
   const [pointsTeamNames, setPointsTeamNames] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("SCORECARD");
+  const [activeTab, setActiveTab] = useState(() => resolveTab(searchParams.get("tab")));
+
+  const getBallOrderValue = (ball) => {
+    const seq = Number(ball?.ballSequence ?? ball?.sequence ?? 0);
+    if (Number.isFinite(seq) && seq > 0) return seq;
+
+    const timeCandidate = ball?.timestamp || ball?.createdAt || ball?.updatedAt;
+    const millis = timeCandidate ? new Date(timeCandidate).getTime() : NaN;
+    if (Number.isFinite(millis) && millis > 0) return millis;
+
+    const objectId = String(ball?.id || ball?._id || "");
+    if (/^[a-fA-F0-9]{24}$/.test(objectId)) {
+      return parseInt(objectId.slice(0, 8), 16);
+    }
+
+    return 0;
+  };
+
+  const compareBallsDesc = (a, b) => {
+    const inningsDiff = Number(b?.innings || 0) - Number(a?.innings || 0);
+    if (inningsDiff !== 0) return inningsDiff;
+
+    const overDiff = Number(b?.over || 0) - Number(a?.over || 0);
+    if (overDiff !== 0) return overDiff;
+
+    const ballDiff = Number(b?.ball || 0) - Number(a?.ball || 0);
+    if (ballDiff !== 0) return ballDiff;
+
+    const orderDiff = getBallOrderValue(b) - getBallOrderValue(a);
+    if (orderDiff !== 0) return orderDiff;
+
+    return Number(b?.ballSequence || b?.timestamp || 0) - Number(a?.ballSequence || a?.timestamp || 0);
+  };
+
+  const handleTabChange = (tab) => {
+    const nextTab = resolveTab(tab);
+    setActiveTab(nextTab);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("tab", nextTab);
+      return next;
+    }, { replace: true });
+  };
 
   useEffect(() => {
     fetchMatchData();
   }, [matchId]);
+
+  useEffect(() => {
+    const tabFromUrl = resolveTab(searchParams.get("tab"));
+    if (tabFromUrl !== activeTab) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams, activeTab]);
 
   const normalizeScore = (scoreboardScore, matchScore, matchData) => {
     const base = scoreboardScore || matchScore;
@@ -94,9 +152,15 @@ export default function PublicMatchDetails() {
       }
 
       const [scoreboardRes, scoreRes, statsRes, ballRes, leagueRes, pointsRes] = await Promise.all(requests);
-      setScore(normalizeScore(scoreboardRes?.data ?? null, scoreRes?.data ?? null, matchData));
-      setPlayerStats(statsRes?.data || []);
-      setCommentary(ballRes?.data || []);
+      const normalizedScore = normalizeScore(scoreboardRes?.data ?? null, scoreRes?.data ?? null, matchData);
+      const statsData = Array.isArray(statsRes?.data) ? statsRes.data : [];
+      const commentaryData = Array.isArray(ballRes?.data)
+        ? [...ballRes.data].sort(compareBallsDesc)
+        : [];
+
+      setScore(normalizedScore);
+      setPlayerStats(normalizedScore ? statsData : []);
+      setCommentary(normalizedScore ? commentaryData : []);
       setLeague(leagueRes?.data || null);
       const pointsData = pointsRes?.data || [];
       setPointsTable(pointsData);
@@ -124,6 +188,9 @@ export default function PublicMatchDetails() {
       setPointsTeamNames(teamNameMap);
     } catch (err) {
       console.error("Error fetching public match data:", err);
+      setScore(null);
+      setPlayerStats([]);
+      setCommentary([]);
       setError(err?.response?.data?.message || err.message || "Failed to load match");
     } finally {
       setLoading(false);
@@ -140,7 +207,9 @@ export default function PublicMatchDetails() {
       .join("")
       .toUpperCase();
 
-  const statusRaw = (score?.status || match?.status || "").toUpperCase();
+  const statusRaw = String(score?.status || match?.status || "")
+    .toUpperCase()
+    .replace(/_/g, " ");
   const isUpcoming = statusRaw === "NOT_STARTED" || statusRaw === "UPCOMING";
   const isLive = statusRaw.includes("IN PROGRESS") || statusRaw === "LIVE";
   const isCompleted = statusRaw === "COMPLETED";
@@ -251,13 +320,49 @@ export default function PublicMatchDetails() {
   };
 
   const getBallCommentaryText = (ball) => {
-    if (ball?.commentary) return ball.commentary;
-
     const bowler = getPlayerName(ball?.bowlerId);
     const batter = getPlayerName(ball?.batterId);
+    const wicketType = String(ball?.wicketType || "").toUpperCase();
+    const extraType = String(ball?.extraType || "").toUpperCase();
+    const getNoBallTotalRuns = () => {
+      const batRuns = Number(ball?.runs || 0);
+      const boundaryRuns = Number(ball?.boundaryRuns || 0);
+      const extraRuns = Number(ball?.extraRuns || 0);
+      const overthrowRuns = ball?.overthrowBoundary ? 4 : 0;
+      return 1 + batRuns + boundaryRuns + extraRuns + overthrowRuns;
+    };
+
+    if (extraType === "NO_BALL" || extraType === "NB") {
+      const totalRuns = getNoBallTotalRuns();
+      const runOutText =
+        ball?.wicket && wicketType === "RUN_OUT"
+          ? " + Run Out"
+          : "";
+      return `${bowler} to ${batter}, NB + ${totalRuns} run${totalRuns > 1 ? "s" : ""}${runOutText}`;
+    }
+
+    if (ball?.wicket && wicketType === "RUN_OUT") {
+      const runs = Number(ball?.runs || ball?.boundaryRuns || 0);
+      if (runs > 0) {
+        return `${bowler} to ${batter}, ${runs} run${runs > 1 ? "s" : ""} + Run Out`;
+      }
+      return `${bowler} to ${batter}, Run Out`;
+    }
+
+    if (extraType === "LEG_BYE" || extraType === "LB") {
+      const runs = Number(ball?.extraRuns ?? ball?.runs ?? 0);
+      return `${bowler} to ${batter}, ${runs} run${runs > 1 ? "s" : ""} leg bye`;
+    }
+
+    if (extraType === "BYE" || extraType === "B") {
+      const runs = Number(ball?.extraRuns ?? ball?.runs ?? 0);
+      return `${bowler} to ${batter}, ${runs} run${runs > 1 ? "s" : ""} bye`;
+    }
+
+    if (ball?.commentary) return ball.commentary;
 
     if (ball?.wicket) {
-      return `${bowler} to ${batter}, OUT! ${ball.wicketType || "Wicket"}`;
+      return `${bowler} to ${batter}, OUT! ${humanizeText(ball.wicketType || "Wicket")}`;
     }
 
     if (Number(ball?.boundaryRuns) === 6) {
@@ -273,24 +378,44 @@ export default function PublicMatchDetails() {
       return `${bowler} to ${batter}, WIDE${extra > 1 ? ` +${extra}` : ""}`;
     }
 
-    if (ball?.extraType === "NO_BALL") {
-      return `${bowler} to ${batter}, NO BALL`;
-    }
-
-    if (ball?.extraType === "B" || ball?.extraType === "BYE") {
-      return `${bowler} to ${batter}, BYE ${ball?.extraRuns ?? ball?.runs ?? 0}`;
-    }
-
-    if (ball?.extraType === "LB" || ball?.extraType === "LEG_BYE") {
-      return `${bowler} to ${batter}, LEG BYE ${ball?.extraRuns ?? ball?.runs ?? 0}`;
-    }
-
     const runs = Number(ball?.runs || 0);
     if (runs > 0) {
       return `${bowler} to ${batter}, ${runs} run${runs > 1 ? "s" : ""}`;
     }
 
     return `${bowler} to ${batter}, no run`;
+  };
+
+  const getCommentaryBadge = (ball) => {
+    if (ball?.wicket) return "W";
+    if (Number(ball?.boundaryRuns) === 6) return "6";
+    if (Number(ball?.boundaryRuns) === 4) return "4";
+    return null;
+  };
+
+  const getCommentaryBadgeColor = (badge) => {
+    if (badge === "6") return "bg-purple-500";
+    if (badge === "4") return "bg-blue-500";
+    if (badge === "W") return "bg-red-500";
+    return "";
+  };
+
+  const buildCommentaryWithBreak = () => {
+    const sorted = [...commentary].sort(compareBallsDesc);
+
+    const result = [];
+    let lastInnings = null;
+
+    sorted.forEach((ball) => {
+      const currentInnings = Number(ball?.innings || 0);
+      if (lastInnings !== null && currentInnings !== lastInnings) {
+        result.push({ type: "INNINGS_BREAK", innings: lastInnings });
+      }
+      result.push(ball);
+      lastInnings = currentInnings;
+    });
+
+    return result;
   };
 
   const bowlingStats = playerStats
@@ -322,7 +447,7 @@ export default function PublicMatchDetails() {
       case "RUN_OUT":
         return `run out (${fielder || "direct hit"})`;
       default:
-        return stat?.dismissalType || "out";
+        return humanizeText(stat?.dismissalType) || "out";
     }
   };
 
@@ -394,6 +519,22 @@ export default function PublicMatchDetails() {
     });
   };
 
+  const getLivePlayerStat = (playerId) => {
+    if (!playerId) return null;
+    return playerStats.find((s) => s.playerId === playerId) || null;
+  };
+
+  const formatBowlingOvers = (stat) => {
+    if (!stat) return "0.0";
+    if (typeof stat.overs === "number" && !Number.isNaN(stat.overs)) {
+      return stat.overs.toString();
+    }
+    const balls = Number(stat.ballsBowled || 0);
+    const fullOvers = Math.floor(balls / 6);
+    const remBalls = balls % 6;
+    return `${fullOvers}.${remBalls}`;
+  };
+
   const renderTeamScorecard = ({
     teamId,
     teamName,
@@ -422,8 +563,36 @@ export default function PublicMatchDetails() {
       .sort((a, b) => {
         if ((a.innings || 0) !== (b.innings || 0)) return (a.innings || 0) - (b.innings || 0);
         if ((a.over || 0) !== (b.over || 0)) return (a.over || 0) - (b.over || 0);
-        return (a.ball || 0) - (b.ball || 0);
+        if ((a.ball || 0) !== (b.ball || 0)) return (a.ball || 0) - (b.ball || 0);
+        return Number(a.ballSequence || a.timestamp || 0) - Number(b.ballSequence || b.timestamp || 0);
       });
+
+    const getBallTotalRuns = (ball) => {
+      const extraType = String(ball?.extraType || "").toUpperCase();
+      const isWide = extraType === "WIDE" || extraType === "WD";
+      const isNoBall = extraType === "NO_BALL" || extraType === "NB";
+      const isBye = extraType === "BYE" || extraType === "B";
+      const isLegBye = extraType === "LEG_BYE" || extraType === "LB";
+
+      let total = 0;
+
+      if (isWide || isNoBall) {
+        total += 1;
+      }
+
+      if (!isWide && !isBye && !isLegBye) {
+        total += Number(ball?.runs || 0);
+      }
+
+      total += Number(ball?.boundaryRuns || 0);
+      total += Number(ball?.extraRuns || 0);
+
+      if (ball?.overthrowBoundary) {
+        total += 4;
+      }
+
+      return total;
+    };
 
     const extras = {
       byes: inningsBalls
@@ -441,13 +610,22 @@ export default function PublicMatchDetails() {
     };
     const totalExtras = extras.byes + extras.legByes + extras.wides + extras.noBalls;
 
-    const fallOfWickets = inningsBalls
-      .filter((b) => b.wicket)
-      .map((b) => ({
-        player: getPlayerName(b.outBatterId),
-        score: `${b.totalRunsAtBall ?? teamScore?.runs ?? 0}-${b.totalWicketsAtBall ?? ""}`.replace(/-$/, ""),
-        over: `${b.over}.${b.ball}`,
-      }));
+    const fallOfWickets = [];
+    let cumulativeRuns = 0;
+    let cumulativeWickets = 0;
+
+    inningsBalls.forEach((ball) => {
+      cumulativeRuns += getBallTotalRuns(ball);
+
+      if (ball?.wicket) {
+        cumulativeWickets += 1;
+        fallOfWickets.push({
+          player: getPlayerName(ball.outBatterId || ball.batterId),
+          score: `${cumulativeRuns}-${cumulativeWickets}`,
+          over: `${ball.over}.${ball.ball}`,
+        });
+      }
+    });
 
     const outBatters = (outBatterIds || [])
       .map((id) => playerById[id])
@@ -740,49 +918,51 @@ export default function PublicMatchDetails() {
         )}
 
         <div className="space-y-4">
-          <div className="flex gap-2 border-b border-slate-200 overflow-x-auto bg-white rounded-t-lg px-2">
+          <div className="bg-white border-b border-slate-200 rounded-t-lg">
+            <div className="flex gap-6 px-4 overflow-x-auto">
+              <button
+                onClick={() => handleTabChange("LIVE")}
+                className={`py-3 font-semibold text-sm transition-all border-b-2 whitespace-nowrap ${
+                  activeTab === "LIVE"
+                    ? "border-teal-600 text-teal-600"
+                    : "border-transparent text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                LIVE
+              </button>
             <button
-              onClick={() => setActiveTab("SCORECARD")}
-              className={`px-4 py-2 font-semibold transition whitespace-nowrap ${
+              onClick={() => handleTabChange("SCORECARD")}
+              className={`py-3 font-semibold text-sm transition-all border-b-2 whitespace-nowrap ${
                 activeTab === "SCORECARD"
-                  ? "text-teal-700 border-b-2 border-teal-700"
-                  : "text-slate-500 hover:text-slate-800"
+                  ? "border-teal-600 text-teal-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900"
               }`}
             >
-              Scorecard
+              SCORECARD
             </button>
             <button
-              onClick={() => setActiveTab("LIVE")}
-              className={`px-4 py-2 font-semibold transition whitespace-nowrap ${
-                activeTab === "LIVE"
-                  ? "text-teal-700 border-b-2 border-teal-700"
-                  : "text-slate-500 hover:text-slate-800"
+              onClick={() => handleTabChange("SQUADS")}
+              className={`py-3 font-semibold text-sm transition-all border-b-2 whitespace-nowrap ${
+                activeTab === "SQUADS"
+                  ? "border-teal-600 text-teal-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900"
               }`}
             >
-              Live Commentary
-            </button>
-            <button
-              onClick={() => setActiveTab("SQUAD")}
-              className={`px-4 py-2 font-semibold transition whitespace-nowrap ${
-                activeTab === "SQUAD"
-                  ? "text-teal-700 border-b-2 border-teal-700"
-                  : "text-slate-500 hover:text-slate-800"
-              }`}
-            >
-              Squad
+              SQUADS
             </button>
             {isTournament && (
               <button
-                onClick={() => setActiveTab("POINTS")}
-                className={`px-4 py-2 font-semibold transition whitespace-nowrap ${
+                onClick={() => handleTabChange("POINTS")}
+                className={`py-3 font-semibold text-sm transition-all border-b-2 whitespace-nowrap ${
                   activeTab === "POINTS"
-                    ? "text-teal-700 border-b-2 border-teal-700"
-                    : "text-slate-500 hover:text-slate-800"
+                    ? "border-teal-600 text-teal-600"
+                    : "border-transparent text-gray-600 hover:text-gray-900"
                 }`}
               >
-                Points Table
+                POINTS
               </button>
             )}
+          </div>
           </div>
 
           {activeTab === "SCORECARD" && (
@@ -835,36 +1015,103 @@ export default function PublicMatchDetails() {
 
           {activeTab === "LIVE" && (
             <Card className="bg-white border-slate-200 shadow-sm">
-              <CardContent className="p-6 space-y-2">
-                {commentary.length > 0 ? (
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {[...commentary]
-                      .sort((a, b) => {
-                        const overDiff = Number(b.over || 0) - Number(a.over || 0);
-                        if (overDiff !== 0) return overDiff;
-                        return Number(b.ball || 0) - Number(a.ball || 0);
-                      })
-                      .map((ball, idx) => (
-                        <div
-                          key={idx}
-                          className="p-3 bg-slate-50 rounded text-sm text-slate-700 hover:bg-slate-100 transition border border-slate-200"
-                        >
-                          <div className="flex justify-between items-start gap-2">
-                            <div className="flex-1">
-                              <span className="font-semibold text-teal-700">
-                                {formatOverBall(ball.over, ball.ball)}
-                              </span>
-                              <span className="mx-2">-</span>
-                              <span>{getBallCommentaryText(ball)}</span>
-                            </div>
-                            {ball.runs > 0 && (
-                              <span className="px-2 py-1 bg-orange-600 text-white rounded font-semibold text-xs">
-                                +{ball.runs}
-                              </span>
-                            )}
+              <CardContent className="p-6 space-y-4">
+                {(() => {
+                  const strikerStat = getLivePlayerStat(score?.strikerId);
+                  const nonStrikerStat = getLivePlayerStat(score?.nonStrikerId);
+                  const bowlerStat = getLivePlayerStat(score?.currentBowlerId);
+                  const showLivePlayers = Boolean(score?.strikerId || score?.nonStrikerId || score?.currentBowlerId);
+
+                  if (!showLivePlayers) return null;
+
+                  return (
+                    <div className="rounded-lg border border-slate-200 overflow-hidden">
+                      <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
+                        <p className="font-semibold text-slate-900">Current Players</p>
+                      </div>
+
+                      <div className="px-4 py-3 bg-white border-b border-slate-200">
+                        <p className="text-xs uppercase tracking-wide text-slate-500 mb-2">Batters</p>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between gap-3 text-sm">
+                            <p className="font-semibold text-slate-900">
+                              {renderPlayerLink(score?.strikerId, getPlayerName(score?.strikerId))} <span className="text-teal-700">*</span>
+                            </p>
+                            <p className="text-slate-700">
+                              {strikerStat?.runs ?? 0} ({strikerStat?.balls ?? 0}){" "}
+                              <span className="text-slate-500">SR {Number(strikerStat?.strikeRate ?? 0).toFixed(2)}</span>
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between gap-3 text-sm">
+                            <p className="font-semibold text-slate-900">
+                              {renderPlayerLink(score?.nonStrikerId, getPlayerName(score?.nonStrikerId))}
+                            </p>
+                            <p className="text-slate-700">
+                              {nonStrikerStat?.runs ?? 0} ({nonStrikerStat?.balls ?? 0}){" "}
+                              <span className="text-slate-500">SR {Number(nonStrikerStat?.strikeRate ?? 0).toFixed(2)}</span>
+                            </p>
                           </div>
                         </div>
-                      ))}
+                      </div>
+
+                      <div className="px-4 py-3 bg-white">
+                        <p className="text-xs uppercase tracking-wide text-slate-500 mb-2">Bowler</p>
+                        <div className="flex items-center justify-between gap-3 text-sm">
+                          <p className="font-semibold text-slate-900">
+                            {renderPlayerLink(score?.currentBowlerId, getPlayerName(score?.currentBowlerId))}
+                          </p>
+                          <p className="text-slate-700">
+                            {formatBowlingOvers(bowlerStat)}-{bowlerStat?.maidens ?? 0}-{bowlerStat?.runsConceded ?? 0}-{bowlerStat?.wickets ?? 0}{" "}
+                            <span className="text-slate-500">ECO {Number(bowlerStat?.economy ?? 0).toFixed(2)}</span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                <h3 className="font-semibold text-sm text-slate-900">Live Commentary</h3>
+
+                {commentary.length > 0 ? (
+                  <div className="max-h-96 overflow-y-auto rounded-md border border-slate-200 bg-white">
+                    {buildCommentaryWithBreak().map((ball, idx) => {
+                      if (ball?.type === "INNINGS_BREAK") {
+                        return (
+                          <div
+                            key={`break-${idx}`}
+                            className="bg-slate-100 px-3 py-2 text-center text-sm font-semibold text-slate-700 border-b border-t border-slate-200"
+                          >
+                            First Innings Completed
+                          </div>
+                        );
+                      }
+
+                      const badge = getCommentaryBadge(ball);
+                      const badgeColor = getCommentaryBadgeColor(badge);
+
+                      return (
+                        <div
+                          key={ball?.id || `${ball?.innings}-${ball?.over}-${ball?.ball}-${idx}`}
+                          className="flex items-start gap-3 border-b border-slate-200 px-3 py-2 text-sm"
+                        >
+                          <div className="w-14 shrink-0 font-semibold text-slate-700">
+                            {formatOverBall(ball?.over, ball?.ball)}
+                          </div>
+
+                          {badge && (
+                            <div
+                              className={`h-7 w-7 shrink-0 rounded-full text-white flex items-center justify-center text-xs font-bold ${badgeColor}`}
+                            >
+                              {badge}
+                            </div>
+                          )}
+
+                          <div className="flex-1 text-slate-800">
+                            {getBallCommentaryText(ball)}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="text-slate-400 text-center py-4">No ball-by-ball data available yet</p>
@@ -873,7 +1120,7 @@ export default function PublicMatchDetails() {
             </Card>
           )}
 
-          {activeTab === "SQUAD" && (
+          {activeTab === "SQUADS" && (
             <Card className="bg-white border-slate-200 shadow-sm">
               <CardContent className="p-0">
                 <div className="bg-slate-50 text-slate-900 rounded-t-lg px-6 py-4 border-b border-slate-200">
@@ -940,7 +1187,7 @@ export default function PublicMatchDetails() {
                                 )
                                 : "-"}
                             </p>
-                            <p className="text-sm text-slate-500">{row.left?.role || "-"}</p>
+                            <p className="text-sm text-slate-500">{humanizeText(row.left?.role) || "-"}</p>
                           </div>
                         </div>
 
@@ -959,7 +1206,7 @@ export default function PublicMatchDetails() {
                                 )
                                 : "-"}
                             </p>
-                            <p className="text-sm text-slate-500">{row.right?.role || "-"}</p>
+                            <p className="text-sm text-slate-500">{humanizeText(row.right?.role) || "-"}</p>
                           </div>
                           <div className="h-12 w-12 rounded-full bg-slate-200 flex items-center justify-center text-slate-700 font-semibold">
                             {row.right?.photoUrl ? (
@@ -1018,7 +1265,7 @@ export default function PublicMatchDetails() {
                                     )
                                     : "-"}
                                 </p>
-                                <p className="text-sm text-slate-500">{row.left?.role || "-"}</p>
+                                <p className="text-sm text-slate-500">{humanizeText(row.left?.role) || "-"}</p>
                               </div>
                             </div>
                             <div className="p-5 border-l-0 md:border-l border-slate-200 flex items-center justify-end gap-4">
@@ -1036,7 +1283,7 @@ export default function PublicMatchDetails() {
                                     )
                                     : "-"}
                                 </p>
-                                <p className="text-sm text-slate-500">{row.right?.role || "-"}</p>
+                                <p className="text-sm text-slate-500">{humanizeText(row.right?.role) || "-"}</p>
                               </div>
                               <div className="h-12 w-12 rounded-full bg-slate-200 flex items-center justify-center text-slate-700 font-semibold">
                                 {row.right?.photoUrl ? (
@@ -1074,13 +1321,13 @@ export default function PublicMatchDetails() {
                         </div>
                         <div>
                           <p className="font-semibold text-slate-900">{row.left?.name || "-"}</p>
-                          <p className="text-sm text-slate-500">{row.left?.role || "-"}</p>
+                          <p className="text-sm text-slate-500">{humanizeText(row.left?.role) || "-"}</p>
                         </div>
                       </div>
                       <div className="p-5 border-l-0 md:border-l border-slate-200 flex items-center justify-end gap-4">
                         <div className="text-right">
                           <p className="font-semibold text-slate-900">{row.right?.name || "-"}</p>
-                          <p className="text-sm text-slate-500">{row.right?.role || "-"}</p>
+                          <p className="text-sm text-slate-500">{humanizeText(row.right?.role) || "-"}</p>
                         </div>
                         <div className="h-12 w-12 rounded-full bg-slate-200 flex items-center justify-center text-slate-700 font-semibold">
                           {getInitials(row.right?.name)}

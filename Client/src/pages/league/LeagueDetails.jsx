@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { humanizeText } from "@/lib/utils";
 
 export default function LeagueDetails() {
   const { id } = useParams();
@@ -108,7 +109,7 @@ export default function LeagueDetails() {
   return (
     <DashboardLayout
       title={league.name}
-      subtitle={`Type: ${league.leagueType}`}
+      subtitle={`Type: ${humanizeText(league.leagueType)}`}
       backTo="/admin/leagues"
     >
       <div className="space-y-6">
@@ -195,7 +196,7 @@ export default function LeagueDetails() {
                 <div key={m.id} className="p-4 bg-slate-800 rounded-lg flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                   <div className="space-y-1">
                     <p className="font-semibold">
-                      Match {m.matchNo} ({m.matchType})
+                      Match {m.matchNo} ({humanizeText(m.matchType)})
                     </p>
 
                     <p className="text-sm text-slate-400">
@@ -218,7 +219,7 @@ export default function LeagueDetails() {
 
                   <div className="flex items-center gap-3">
                     <span className="text-sm px-3 py-1 rounded bg-emerald-700">
-                      {m.status}
+                      {humanizeText(m.status)}
                     </span>
 
                     <Button
