@@ -525,30 +525,6 @@ export default function Scorecard({
           </p>
         )}
 
-        {/* Fall of Wickets */}
-        {fallOfWickets.length > 0 && (
-          <div className="overflow-x-auto border rounded-lg">
-            <table className="w-full text-sm bg-white">
-              <thead>
-                <tr className="bg-gray-100 border-b">
-                  <th className="text-left p-3 font-semibold">Fall of Wickets</th>
-                  <th className="text-left p-3 font-semibold">Score</th>
-                  <th className="text-left p-3 font-semibold">Over</th>
-                </tr>
-              </thead>
-              <tbody>
-                {fallOfWickets.map((w, idx) => (
-                  <tr key={`${w.player}-${idx}`} className="border-b">
-                    <td className="p-3 text-blue-600">{w.player}</td>
-                    <td className="p-3">{w.score}</td>
-                    <td className="p-3">{w.over}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
         {/* Bowling Table */}
         {bowling.length > 0 && (
           <div className="mt-6 overflow-x-auto border rounded-lg">
@@ -578,6 +554,30 @@ export default function Scorecard({
                     <td className="text-center p-3">{b.noBalls || 0}</td>
                     <td className="text-center p-3">{b.wides || 0}</td>
                     <td className="text-center p-3">{b.economy?.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Fall of Wickets */}
+        {fallOfWickets.length > 0 && (
+          <div className="overflow-x-auto border rounded-lg">
+            <table className="w-full text-sm bg-white">
+              <thead>
+                <tr className="bg-gray-100 border-b">
+                  <th className="text-left p-3 font-semibold">Fall of Wickets</th>
+                  <th className="text-left p-3 font-semibold">Score</th>
+                  <th className="text-left p-3 font-semibold">Over</th>
+                </tr>
+              </thead>
+              <tbody>
+                {fallOfWickets.map((w, idx) => (
+                  <tr key={`${w.player}-${idx}`} className="border-b">
+                    <td className="p-3 text-blue-600">{w.player}</td>
+                    <td className="p-3">{w.score}</td>
+                    <td className="p-3">{w.over}</td>
                   </tr>
                 ))}
               </tbody>
