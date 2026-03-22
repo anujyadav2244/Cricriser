@@ -42,6 +42,7 @@ export const ROLE_ROUTES = {
     verifySignupOtp: "/admin/verify-otp", 
     dashboard: "/admin/dashboard",
     forgotPassword: "/admin/forgot-password",
+    resetPassword: "/admin/reset-password",
   },
 
   PLAYER: {
@@ -51,6 +52,7 @@ export const ROLE_ROUTES = {
     verifySignupOtp: "/player/verify-otp",
     dashboard: "/player/dashboard",
     forgotPassword: "/player/forgot-password",
+    resetPassword: "/player/reset-password",
   },
 
   TEAM_OWNER: {
@@ -60,5 +62,6 @@ export const ROLE_ROUTES = {
     verifySignupOtp: "/team-owner/verify-otp", 
     dashboard: "/team-owner/dashboard",
     forgotPassword: "/team-owner/forgot-password",
+    resetPassword: "/team-owner/reset-password",
   },
 };

@@ -86,6 +86,7 @@ export default function AppRoutes() {
       <Route path="/admin/verify-otp" element={<AdminVerifySignupOtp />} />
       <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
       <Route path="/admin/verify-forgot-otp" element={<AdminVerifyForgotOtp />} />
+      <Route path="/admin/reset-password" element={<AdminResetPassword />} />
 
       {/* ===== TEAM OWNER AUTH ===== */}
       <Route path="/team-owner/login" element={<TeamOwnerLogin />} />
@@ -93,6 +94,7 @@ export default function AppRoutes() {
       <Route path="/team-owner/verify-otp" element={<TeamOwnerVerifyOtp />} />
       <Route path="/team-owner/forgot-password" element={<TeamOwnerForgotPassword />} />
       <Route path="/team-owner/verify-forgot-otp" element={<TeamOwnerVerifyForgotOtp />} />
+      <Route path="/team-owner/reset-password" element={<TeamOwnerResetPassword />} />
 
       {/* ===== PLAYER AUTH ===== */}
       <Route path="/player/login" element={<PlayerLogin />} />
@@ -100,6 +102,7 @@ export default function AppRoutes() {
       <Route path="/player/verify-otp" element={<PlayerVerifyOtp />} />
       <Route path="/player/forgot-password" element={<PlayerForgotPassword />} />
       <Route path="/player/verify-forgot-otp" element={<PlayerVerifyForgotOtp />} />
+      <Route path="/player/reset-password" element={<PlayerResetPassword />} />
 
       {/* ===== ADMIN PROTECTED ===== */}
       <Route
