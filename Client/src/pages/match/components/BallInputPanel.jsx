@@ -65,6 +65,16 @@ export default function BallInputPanel({
     ? matchScore.team1OutBatters
     : matchScore.team2OutBatters;
 
+  const normalizeRole = (role) => {
+    const raw = String(role || "")
+      .trim()
+      .toUpperCase()
+      .replace(/[\s-]+/g, "_");
+
+    if (raw === "WICKETKEEPER" || raw === "WK") return "WICKET_KEEPER";
+    return raw;
+  };
+
   /* ================= DERIVED LISTS ================= */
 
   const newBatterOptions = useMemo(() => {
@@ -76,7 +86,19 @@ export default function BallInputPanel({
     );
   }, [battingXI, outBatters, matchScore]);
 
-  const fielderOptions = bowlingXI;
+  const fielderOptions = useMemo(() => {
+    if (wicketType !== "STUMPED") return bowlingXI;
+
+    const allPlayers = [
+      ...(matchDetails?.team1?.squad || []),
+      ...(matchDetails?.team2?.squad || []),
+    ];
+
+    return bowlingXI.filter((id) => {
+      const player = allPlayers.find((p) => p.id === id);
+      return normalizeRole(player?.role) === "WICKET_KEEPER";
+    });
+  }, [bowlingXI, wicketType, matchDetails]);
 
   const newBowlerOptions = bowlingXI.filter(
     (id) => id !== matchScore.previousBowlerId
