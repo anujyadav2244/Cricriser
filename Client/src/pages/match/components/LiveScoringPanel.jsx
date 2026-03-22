@@ -95,9 +95,14 @@ export default function LiveScoringPanel({
     const isBye = extraType === "BYE" || extraType === "B";
     const isLegBye = extraType === "LEG_BYE" || extraType === "LB";
 
+    const completedRuns =
+      Number(ball?.runs || 0) > 0
+        ? Number(ball?.runs || 0)
+        : Number(ball?.runningRuns || 0);
+
     let total = 0;
     if (isWide || isNoBall) total += 1;
-    if (!isWide && !isBye && !isLegBye) total += Number(ball?.runs || 0);
+    if (!isWide && !isBye && !isLegBye) total += completedRuns;
     total += Number(ball?.boundaryRuns || 0);
     total += Number(ball?.extraRuns || 0);
     if (ball?.overthrowBoundary) total += 4;

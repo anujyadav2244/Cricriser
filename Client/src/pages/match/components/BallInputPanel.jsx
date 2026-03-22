@@ -373,6 +373,7 @@ export default function BallInputPanel({
                     if (boundaryRuns === r) {
                       // Toggle off
                       setBoundaryRuns(null);
+                      setRunningRuns(0);
                     } else {
                       // Toggle on
                       setBoundaryRuns(r);
@@ -385,22 +386,22 @@ export default function BallInputPanel({
               ))}
             </div>
 
-            {/* {boundaryRuns === 4 && (
+            {boundaryRuns === 4 && (
               <div>
-                <p className="text-sm">Overthrow Runs</p>
+                <p className="text-sm">Running Runs</p>
                 <div className="flex gap-2">
-                  {[0, 1, 2, 3, 4].map((r) => (
+                  {[1, 2, 3, 4].map((r) => (
                     <Button
                       key={r}
                       variant={runningRuns === r ? "default" : "outline"}
-                      onClick={() => setRunningRuns(r)}
+                      onClick={() => setRunningRuns(runningRuns === r ? 0 : r)}
                     >
                       {r}
                     </Button>
                   ))}
                 </div>
               </div>
-            )} */}
+            )}
           </div>
         )}
 
