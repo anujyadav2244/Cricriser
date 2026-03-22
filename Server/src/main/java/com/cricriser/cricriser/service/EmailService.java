@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,9 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
+    @Value("${spring.mail.username:}")
+    private String senderEmail;
+
     @Value("${app.otp.valid-minutes:10}")
     private int otpValidMinutes;
 
@@ -28,10 +32,15 @@ public class EmailService {
         try {
             System.out.println("[EmailService] Preparing to send OTP to: " + toEmail);
 
+            if (senderEmail == null || senderEmail.isBlank()) {
+                throw new IllegalStateException("SPRING_MAIL_USERNAME is missing. Configure SMTP sender email.");
+            }
+
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
             helper.setTo(Objects.requireNonNull(toEmail));
+            helper.setFrom(Objects.requireNonNull(senderEmail));
             helper.setSubject("Your cricriser OTP");
 
             String htmlContent = """
@@ -66,6 +75,9 @@ public class EmailService {
         } catch (MessagingException e) {
             System.err.println("[EmailService] Failed to send OTP email to: " + toEmail);
             throw new RuntimeException("Failed to send OTP email. Please try again later.", e);
+        } catch (MailException e) {
+            System.err.println("[EmailService] Failed to send OTP email to: " + toEmail + " reason: " + e.getMessage());
+            throw new RuntimeException("Failed to send OTP email. Check SMTP configuration and credentials.", e);
         }
     }
 }

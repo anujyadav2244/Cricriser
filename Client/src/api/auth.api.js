@@ -12,8 +12,8 @@ export const adminVerifyOtp = ({ email, otp }) =>
 export const adminForgotPassword = (email) =>
   axios.post("/api/auth/forgot-password", { email });
 
-export const adminVerifyForgotOtp = ({ email, otp }) =>
-  axios.post("/api/auth/verify-forgot-otp", { email, otp });
+export const adminVerifyForgotOtp = ({ email, otp, newPassword }) =>
+  axios.post("/api/auth/verify-forgot-otp", { email, otp, newPassword });
 
 export const adminResetPassword = (data) =>
   axios.put("/api/auth/reset-password", data);
