@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/match/score")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${app.allowed.origins:cricriser.vercel.app}", allowCredentials = "true")
 public class MatchScoreController {
 
     @Autowired

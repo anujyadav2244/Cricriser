@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/match/scoreboard")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${app.allowed.origins:cricriser.vercel.app}", allowCredentials = "true")
 @RequiredArgsConstructor
 public class MatchScoreboardController {
 
