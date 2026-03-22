@@ -91,7 +91,8 @@ public class MatchPlayerStatsService {
             return 0;
         }
 
-        return Math.max(0, ball.getRuns()) + Math.max(0, ball.getBoundaryRuns());
+        int completedRuns = Math.max(0, Math.max(ball.getRuns(), ball.getRunningRuns()));
+        return completedRuns + Math.max(0, ball.getBoundaryRuns());
     }
 
     private void updateBowlerStats(BallByBall ball, MatchScore score) {
