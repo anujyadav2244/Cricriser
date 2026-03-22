@@ -1,16 +1,37 @@
 import { useEffect, useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { Outlet } from "react-router-dom";
 import TeamOwnerNavbar from "./TeamOwnerNavbar";
 import TeamOwnerSidebar from "./TeamOwnerSidebar";
 
+const getDefaultSidebarState = () => {
+  if (typeof window === "undefined") return true;
+  return window.matchMedia("(min-width: 768px)").matches;
+};
+
 export default function TeamOwnerLayout() {
-  const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(getDefaultSidebarState);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
+
+    const handleBreakpointChange = (event) => {
+      setSidebarOpen(event.matches);
+    };
+
+    handleBreakpointChange(mediaQuery);
+    mediaQuery.addEventListener("change", handleBreakpointChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleBreakpointChange);
+    };
+  }, []);
 
   return (
     <div className="h-screen flex flex-col">
-      <TeamOwnerNavbar onMenuClick={() => setSidebarOpen(o => !o)} />
+      <TeamOwnerNavbar
+        open={sidebarOpen}
+        onMenuClick={() => setSidebarOpen((o) => !o)}
+      />
 
       <div className="flex flex-1 overflow-hidden">
         <TeamOwnerSidebar

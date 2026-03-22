@@ -47,6 +47,7 @@ export default function PlayerLayout() {
     <div className="h-screen flex flex-col">
       <PlayerNavbar
         player={player}
+        open={sidebarOpen}
         onMenuClick={() => setSidebarOpen(o => !o)}
       />
 

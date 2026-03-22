@@ -1,4 +1,4 @@
-import { Menu } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,7 +10,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 
-export default function PlayerNavbar({ onMenuClick, player }) {
+export default function PlayerNavbar({ onMenuClick, player, open }) {
   const navigate = useNavigate();
 
   const logout = () => {
@@ -26,9 +26,11 @@ export default function PlayerNavbar({ onMenuClick, player }) {
           variant="ghost"
           size="icon"
           onClick={onMenuClick}
+          aria-label={open ? "Close sidebar" : "Open sidebar"}
+          aria-expanded={open}
           className="text-slate-300 hover:bg-slate-800 md:hidden"
         >
-          <Menu className="h-5 w-5" />
+          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
 
         <span className="text-white font-semibold">

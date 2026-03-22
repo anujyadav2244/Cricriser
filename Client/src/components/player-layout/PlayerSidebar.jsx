@@ -2,6 +2,12 @@ import { NavLink } from "react-router-dom";
 import { LayoutDashboard, User } from "lucide-react";
 
 export default function PlayerSidebar({ open, onClose }) {
+  const handleNavClick = () => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      onClose?.();
+    }
+  };
+
   return (
     <>
       {open && (
@@ -24,6 +30,7 @@ export default function PlayerSidebar({ open, onClose }) {
         <nav className="p-4 space-y-2">
           <NavLink
             to="/player/dashboard"
+            onClick={handleNavClick}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2 rounded text-sm
               ${isActive
@@ -37,6 +44,7 @@ export default function PlayerSidebar({ open, onClose }) {
 
           <NavLink
             to="/player/profile"
+            onClick={handleNavClick}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2 rounded text-sm
               ${isActive

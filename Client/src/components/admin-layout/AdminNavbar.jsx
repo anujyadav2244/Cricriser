@@ -1,4 +1,4 @@
-import { Menu } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -10,7 +10,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useAuthStore } from "@/store/auth.store"
 
-export default function AdminNavbar({ onMenuClick }) {
+export default function AdminNavbar({ onMenuClick, open }) {
   const logout = useAuthStore((s) => s.logout)
 
   const handleLogout = () => {
@@ -27,9 +27,11 @@ export default function AdminNavbar({ onMenuClick }) {
           variant="ghost"
           size="icon"
           onClick={onMenuClick}
+          aria-label={open ? "Close sidebar" : "Open sidebar"}
+          aria-expanded={open}
           className="text-slate-300 hover:bg-slate-800"
         >
-          <Menu className="h-5 w-5" />
+          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
 
         <span className="text-slate-100 font-semibold tracking-wide">

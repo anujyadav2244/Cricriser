@@ -5,6 +5,12 @@ import { useAuthStore } from "@/store/auth.store";
 export default function TeamOwnerSidebar({ open, onClose }) {
   const { name, email } = useAuthStore();
 
+  const handleNavClick = () => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      onClose?.();
+    }
+  };
+
   return (
     <>
       {/* OVERLAY (mobile only) */}
@@ -18,11 +24,11 @@ export default function TeamOwnerSidebar({ open, onClose }) {
       <aside
         className={`
           fixed md:static z-50
-          h-full w-64
+          h-full w-64 md:shrink-0
           bg-slate-900 border-r border-slate-800
-          transform transition-transform duration-300
-          ${open ? "translate-x-0" : "-translate-x-full"}
-          md:translate-x-0
+          transform transition-all duration-300
+          overflow-hidden md:translate-x-0
+          ${open ? "translate-x-0 md:w-64" : "-translate-x-full md:w-0"}
         `}
       >
         {/* PROFILE SECTION */}
@@ -48,6 +54,7 @@ export default function TeamOwnerSidebar({ open, onClose }) {
         <nav className="p-4 space-y-2">
           <NavLink
             to="/team-owner/dashboard"
+            onClick={handleNavClick}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2 rounded-md text-sm
               ${
@@ -63,6 +70,7 @@ export default function TeamOwnerSidebar({ open, onClose }) {
 
           <NavLink
             to="/team-owner/teams/create"
+            onClick={handleNavClick}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2 rounded-md text-sm
               ${

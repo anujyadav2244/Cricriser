@@ -13,11 +13,12 @@ export default function PublicHeader({ active = "" }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setMobileMenuOpen(true)}
+              onClick={() => setMobileMenuOpen((open) => !open)}
               className="md:hidden h-10 w-10 rounded-md border border-teal-200/70 text-white text-2xl leading-none"
-              aria-label="Open menu"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
             >
-              &#9776;
+              {mobileMenuOpen ? "\u00D7" : "\u2630"}
             </button>
             <h1 className="text-3xl font-black cursor-pointer tracking-tight" onClick={() => navigate("/")}>
               Cricriser
