@@ -915,6 +915,14 @@ export default function PublicMatchDetails() {
                   <div className="h-14 w-14 rounded-full bg-slate-200 border border-slate-300" />
                 )}
                 <p className="font-semibold text-slate-900 text-sm text-center">{teamAName}</p>
+                <p className="text-lg font-bold text-slate-900 text-center">
+                  {score ? `${score?.teamA?.runs ?? 0}/${score?.teamA?.wickets ?? 0}` : "-/-"}
+                  {score && (
+                    <span className="text-sm font-semibold text-slate-500">
+                      {" "}({score?.teamA?.overs ?? "0.0"} Ov)
+                    </span>
+                  )}
+                </p>
               </div>
 
               <div className="flex flex-col items-center gap-4">
@@ -949,38 +957,18 @@ export default function PublicMatchDetails() {
                   <div className="h-14 w-14 rounded-full bg-slate-200 border border-slate-300" />
                 )}
                 <p className="font-semibold text-slate-900 text-sm text-center">{teamBName}</p>
+                <p className="text-lg font-bold text-slate-900 text-center">
+                  {score ? `${score?.teamB?.runs ?? 0}/${score?.teamB?.wickets ?? 0}` : "-/-"}
+                  {score && (
+                    <span className="text-sm font-semibold text-slate-500">
+                      {" "}({score?.teamB?.overs ?? "0.0"} Ov)
+                    </span>
+                  )}
+                </p>
               </div>
             </div>
           </div>
         </div>
-
-        {score && (
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardContent className="p-4">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2 text-center">
-                  <h3 className="text-base font-semibold text-slate-800">{teamAName}</h3>
-                  <div className="text-2xl sm:text-3xl font-bold text-slate-900 whitespace-nowrap">
-                    {score?.teamA?.runs ?? 0}/{score?.teamA?.wickets ?? 0}
-                    <span className="text-base sm:text-lg font-semibold text-slate-500">
-                      {" "}({score?.teamA?.overs ?? "0.0"} Overs)
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-2 text-center">
-                  <h3 className="text-base font-semibold text-slate-800">{teamBName}</h3>
-                  <div className="text-2xl sm:text-3xl font-bold text-slate-900 whitespace-nowrap">
-                    {score?.teamB?.runs ?? 0}/{score?.teamB?.wickets ?? 0}
-                    <span className="text-base sm:text-lg font-semibold text-slate-500">
-                      {" "}({score?.teamB?.overs ?? "0.0"} Overs)
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         <div className="space-y-4">
           <div className="bg-white border-b border-slate-200 rounded-t-lg">
