@@ -289,9 +289,6 @@ export default function LiveScoringPanel({
               <span className="font-semibold text-slate-900">Last Wkt:</span> {getLastWicketText()}
             </p>
             <p>
-              <span className="font-semibold text-slate-900">Last 10 overs:</span> {getLastTenOversText()}
-            </p>
-            <p>
               <span className="font-semibold text-slate-900">Toss:</span> {tossText}
             </p>
           </div>
