@@ -54,7 +54,7 @@ export default function StartInningsForm({
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        "https://cricriser.up.railway.app/api/match/score/start-innings",
+        `${import.meta.env.VITE_API_BASE_URL}/api/match/score/start-innings`,
         {
           method: "POST",
           headers: {

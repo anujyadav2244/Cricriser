@@ -232,7 +232,7 @@ export default function BallInputPanel({
       };
 
       const res = await fetch(
-        "http://cricriser.up.railway.app/api/ball-by-ball/record",
+        `${import.meta.env.VITE_API_BASE_URL}/api/ball-by-ball/record`,
         {
           method: "POST",
           headers: {

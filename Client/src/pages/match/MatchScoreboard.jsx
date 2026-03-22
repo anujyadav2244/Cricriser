@@ -27,14 +27,14 @@ export default function MatchScoreboard() {
 
       // ===== MATCH DETAILS =====
       const matchRes = await fetch(
-        `http://cricriser.up.railway.app/api/matches/${matchId}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/matches/${matchId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setMatchDetails(await matchRes.json());
 
       // ===== MATCH SCORE =====
       const scoreRes = await fetch(
-        `http://cricriser.up.railway.app/api/match/score/${matchId}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/match/score/${matchId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -55,7 +55,7 @@ export default function MatchScoreboard() {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        `http://cricriser.up.railway.app/api/match/score/${matchId}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/match/score/${matchId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

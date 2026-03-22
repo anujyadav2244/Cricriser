@@ -21,7 +21,7 @@ export default function TeamOwnerDashboard() {
 
       try {
         const res = await axios.get(
-          "https://cricriser.up.railway.app/api/teams/my",
+          `${import.meta.env.VITE_API_BASE_URL}/api/teams/my`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

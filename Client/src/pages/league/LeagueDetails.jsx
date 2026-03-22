@@ -22,7 +22,7 @@ export default function LeagueDetails() {
 
         /* ================= FETCH LEAGUE ================= */
         const leagueRes = await fetch(
-          `http://cricriser.up.railway.app/api/leagues/${id}`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/leagues/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -39,7 +39,7 @@ export default function LeagueDetails() {
 
         /* ================= FETCH MATCHES ================= */
         const matchRes = await fetch(
-          `http://cricriser.up.railway.app/api/matches/league/${id}`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/matches/league/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -58,7 +58,7 @@ export default function LeagueDetails() {
           (matchData || []).map(async (m) => {
             try {
               const scoreRes = await fetch(
-                `http://cricriser.up.railway.app/api/match/score/${m.id}`,
+                `${import.meta.env.VITE_API_BASE_URL}/api/match/score/${m.id}`,
                 {
                   headers: {
                     Authorization: `Bearer ${token}`,

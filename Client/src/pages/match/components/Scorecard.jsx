@@ -91,7 +91,7 @@ export default function Scorecard({
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        `http://cricriser.up.railway.app/api/match-player-stats/match/${matchId}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/match-player-stats/match/${matchId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -113,7 +113,7 @@ export default function Scorecard({
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        `http://cricriser.up.railway.app/api/ball-by-ball/match/${matchId}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/ball-by-ball/match/${matchId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
