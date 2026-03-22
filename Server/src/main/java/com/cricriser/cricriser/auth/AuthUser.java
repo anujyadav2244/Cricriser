@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
@@ -26,7 +27,7 @@ public class AuthUser {
     @NotBlank
     private String password;
 
-    @NotBlank
+    @NotNull(message = "Role is required")
     private Role role;   // ADMIN, TEAM_OWNER, PLAYER, USER
 
     private Boolean verified = false;

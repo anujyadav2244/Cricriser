@@ -26,9 +26,36 @@ public class AuthController {
     // ================= SIGNUP =================
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody AuthUser user) {
-        return ResponseEntity.ok(       
-                Map.of("message", authService.signup(user))
-        );
+        try {
+            // Validate required fields
+            if (user.getEmail() == null || user.getEmail().isBlank()) {
+                return ResponseEntity.badRequest().body(
+                    Map.of("error", "Email is required")
+                );
+            }
+            if (user.getPassword() == null || user.getPassword().isBlank()) {
+                return ResponseEntity.badRequest().body(
+                    Map.of("error", "Password is required")
+                );
+            }
+            if (user.getRole() == null) {
+                return ResponseEntity.badRequest().body(
+                    Map.of("error", "Role is required")
+                );
+            }
+            
+            System.out.println("Signup Request - Email: " + user.getEmail() + ", Role: " + user.getRole() + ", Name: " + user.getName());
+            
+            return ResponseEntity.ok(       
+                    Map.of("message", authService.signup(user))
+            );
+        } catch (Exception e) {
+            System.err.println("Signup Error: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(
+                Map.of("error", e.getMessage())
+            );
+        }
     }
 
     // ================= VERIFY SIGNUP OTP =================
