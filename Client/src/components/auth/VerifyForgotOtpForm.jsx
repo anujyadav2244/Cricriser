@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useLocation, useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,9 +12,13 @@ import { AUTH_API, ROLE_ROUTES } from "@/api/authMap";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 export default function VerifyForgotOtpForm({ role }) {
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email");
-  const prefilledOtp = searchParams.get("otp") || "";
+  const prefilledOtp =
+    searchParams.get("otp")
+    || location.state?.prefilledOtp
+    || "";
   const navigate = useNavigate();
 
   const api = AUTH_API[role];
@@ -96,6 +100,12 @@ export default function VerifyForgotOtpForm({ role }) {
               </InputOTPGroup>
             </InputOTP>
           </div>
+
+          {prefilledOtp && (
+            <p className="text-xs text-amber-600 text-center">
+              Debug mode: OTP was auto-filled from server response.
+            </p>
+          )}
 
           <Input
             type="password"
