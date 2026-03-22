@@ -1,9 +1,9 @@
 package com.cricriser.cricriser.otp;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Random;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +17,7 @@ public class OtpService {
 
     private final OtpRepository otpRepository;
     private final PasswordEncoder passwordEncoder;
-    
-    @Autowired(required = false)
-    private EmailService emailService;
+    private final Optional<EmailService> emailService;
 
     private static final int OTP_EXPIRY_MINUTES = 5;
 
@@ -39,18 +37,13 @@ public class OtpService {
 
         otpRepository.save(token);
         
-        // Send OTP via email if email service is available
-        if (emailService != null) {
-            try {
-                emailService.sendOtpEmail(email, otp);
-                System.out.println("[OtpService] OTP email sent for purpose: " + purpose);
-            } catch (Exception e) {
-                System.err.println("[OtpService] Failed to send OTP email: " + e.getMessage());
-                // Don't fail signup if email sending fails
-            }
-        } else {
-            System.out.println("[OtpService] Email service not enabled. OTP: " + otp);
-        }
+        // OTP-based auth depends on email delivery; fail fast if unavailable.
+        EmailService sender = emailService.orElseThrow(
+                () -> new IllegalStateException("OTP email service is disabled. Please enable EMAIL_ENABLED and mail credentials.")
+        );
+
+        sender.sendOtpEmail(email, otp);
+        System.out.println("[OtpService] OTP email sent for purpose: " + purpose);
         
         return otp;
     }
@@ -59,14 +52,14 @@ public class OtpService {
 
         OtpToken token = otpRepository
                 .findByEmailAndPurposeAndUsedFalse(email, purpose)
-                .orElseThrow(() -> new RuntimeException("OTP not found"));
+                .orElseThrow(() -> new IllegalArgumentException("OTP not found"));
 
         if (LocalDateTime.now().isAfter(token.getExpiresAt())) {
-            throw new RuntimeException("OTP expired");
+            throw new IllegalArgumentException("OTP expired");
         }
 
         if (!passwordEncoder.matches(otp, token.getOtp())) {
-            throw new RuntimeException("Invalid OTP");
+            throw new IllegalArgumentException("Invalid OTP");
         }
 
         token.setUsed(true);
