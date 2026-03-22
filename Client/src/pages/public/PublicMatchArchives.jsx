@@ -1,9 +1,9 @@
 ﻿import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import api from "@/api/axios";
 import { formatDate } from "@/lib/utils";
+import PublicHeader from "@/components/public/PublicHeader";
 
 export default function PublicMatchArchives() {
   const navigate = useNavigate();
@@ -130,21 +130,7 @@ export default function PublicMatchArchives() {
 
   return (
     <div className="min-h-screen bg-slate-100">
-      <header className="bg-teal-700 text-white">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <h1 className="text-3xl font-black cursor-pointer tracking-tight" onClick={() => navigate("/")}>
-            cricriser
-          </h1>
-          <div className="flex items-center gap-6 text-sm font-semibold">
-            <button onClick={() => navigate("/")}>Live Scores</button>
-            <button onClick={() => navigate("/matches/schedule")}>Schedule</button>
-            <button className="underline">Archives</button>
-            <button onClick={() => navigate("/login")} className="bg-white text-teal-700 px-4 py-1.5 rounded-full">
-              Login
-            </button>
-          </div>
-        </div>
-      </header>
+      <PublicHeader active="archives" />
 
       <section className="max-w-7xl mx-auto px-6 py-8">
         <h2 className="text-2xl font-bold mb-6">Match Archives</h2>

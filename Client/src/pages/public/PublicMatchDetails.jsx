@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import api from "@/api/axios";
 import { humanizeText } from "@/lib/utils";
+import PublicHeader from "@/components/public/PublicHeader";
 
 const ALLOWED_TABS = ["LIVE", "SCORECARD", "SQUADS", "POINTS"];
 const resolveTab = (value) => {
@@ -797,8 +798,9 @@ export default function PublicMatchDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-100 py-8">
-        <div className="max-w-6xl mx-auto px-4">
+      <div className="min-h-screen bg-slate-100">
+        <PublicHeader active="live" />
+        <div className="max-w-6xl mx-auto px-4 py-8">
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardContent className="p-8 text-center text-slate-600">
               Loading match details...
@@ -811,8 +813,9 @@ export default function PublicMatchDetails() {
 
   if (error || !match) {
     return (
-      <div className="min-h-screen bg-slate-100 py-8">
-        <div className="max-w-6xl mx-auto px-4">
+      <div className="min-h-screen bg-slate-100">
+        <PublicHeader active="live" />
+        <div className="max-w-6xl mx-auto px-4 py-8">
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardContent className="p-8 text-center">
               <p className="text-red-400 mb-4">{error || "Match not found."}</p>
@@ -825,8 +828,9 @@ export default function PublicMatchDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 py-8">
-      <div className="max-w-6xl mx-auto px-4 space-y-6">
+    <div className="min-h-screen bg-slate-100">
+      <PublicHeader active="live" />
+      <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
         <div className="mb-6">
           <Button variant="outline" className="mb-4 border-slate-300 bg-white text-slate-800" onClick={() => navigate("/")}>
             Back to Matches

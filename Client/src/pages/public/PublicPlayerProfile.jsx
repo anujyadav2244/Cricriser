@@ -3,6 +3,7 @@ import { Link, useLocation, useParams, useSearchParams } from "react-router-dom"
 import { Card, CardContent } from "@/components/ui/card";
 import api from "@/api/axios";
 import { humanizeText } from "@/lib/utils";
+import PublicHeader from "@/components/public/PublicHeader";
 
 export default function PublicPlayerProfile() {
   const { playerId } = useParams();
@@ -129,8 +130,9 @@ export default function PublicPlayerProfile() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-100 py-6">
-      <div className="max-w-4xl mx-auto px-4 space-y-4">
+    <div className="min-h-screen bg-slate-100">
+      <PublicHeader />
+      <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
         <Link to={matchId ? `/match/${matchId}` : "/"} className="text-slate-600 hover:text-slate-900 text-sm">
           Back
         </Link>
