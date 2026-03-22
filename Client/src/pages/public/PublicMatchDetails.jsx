@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import api from "@/api/axios";
 import { humanizeText } from "@/lib/utils";
 import PublicHeader from "@/components/public/PublicHeader";
+import LiveScoringPanel from "@/pages/match/components/LiveScoringPanel";
 
 const ALLOWED_TABS = ["LIVE", "SCORECARD", "SQUADS", "POINTS"];
 const resolveTab = (value) => {
@@ -232,7 +233,7 @@ export default function PublicMatchDetails() {
             if (resolvedName) {
               teamNameMap[idOrName] = resolvedName;
             }
-          } catch (_) {
+          } catch {
             // Keep original value if lookup fails.
           }
         })
@@ -586,22 +587,6 @@ export default function PublicMatchDetails() {
       if (aIdx !== bIdx) return aIdx - bIdx;
       return getPlayerName(a.playerId).localeCompare(getPlayerName(b.playerId));
     });
-  };
-
-  const getLivePlayerStat = (playerId) => {
-    if (!playerId) return null;
-    return playerStats.find((s) => s.playerId === playerId) || null;
-  };
-
-  const formatBowlingOvers = (stat) => {
-    if (!stat) return "0.0";
-    if (typeof stat.overs === "number" && !Number.isNaN(stat.overs)) {
-      return stat.overs.toString();
-    }
-    const balls = Number(stat.ballsBowled || 0);
-    const fullOvers = Math.floor(balls / 6);
-    const remBalls = balls % 6;
-    return `${fullOvers}.${remBalls}`;
   };
 
   const renderTeamScorecard = ({
@@ -1096,59 +1081,14 @@ export default function PublicMatchDetails() {
           {activeTab === "LIVE" && (
             <Card className="bg-white border-slate-200 shadow-sm">
               <CardContent className="p-6 space-y-4">
-                {(() => {
-                  const strikerStat = getLivePlayerStat(score?.strikerId);
-                  const nonStrikerStat = getLivePlayerStat(score?.nonStrikerId);
-                  const bowlerStat = getLivePlayerStat(score?.currentBowlerId);
-                  const showLivePlayers = Boolean(score?.strikerId || score?.nonStrikerId || score?.currentBowlerId);
-
-                  if (!showLivePlayers) return null;
-
-                  return (
-                    <div className="rounded-lg border border-slate-200 overflow-hidden">
-                      <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
-                        <p className="font-semibold text-slate-900">Current Players</p>
-                      </div>
-
-                      <div className="px-4 py-3 bg-white border-b border-slate-200">
-                        <p className="text-xs uppercase tracking-wide text-slate-500 mb-2">Batters</p>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between gap-3 text-sm">
-                            <p className="font-semibold text-slate-900">
-                              {renderPlayerLink(score?.strikerId, getPlayerName(score?.strikerId))} <span className="text-teal-700">*</span>
-                            </p>
-                            <p className="text-slate-700">
-                              {strikerStat?.runs ?? 0} ({strikerStat?.balls ?? 0}){" "}
-                              <span className="text-slate-500">SR {Number(strikerStat?.strikeRate ?? 0).toFixed(2)}</span>
-                            </p>
-                          </div>
-                          <div className="flex items-center justify-between gap-3 text-sm">
-                            <p className="font-semibold text-slate-900">
-                              {renderPlayerLink(score?.nonStrikerId, getPlayerName(score?.nonStrikerId))}
-                            </p>
-                            <p className="text-slate-700">
-                              {nonStrikerStat?.runs ?? 0} ({nonStrikerStat?.balls ?? 0}){" "}
-                              <span className="text-slate-500">SR {Number(nonStrikerStat?.strikeRate ?? 0).toFixed(2)}</span>
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="px-4 py-3 bg-white">
-                        <p className="text-xs uppercase tracking-wide text-slate-500 mb-2">Bowler</p>
-                        <div className="flex items-center justify-between gap-3 text-sm">
-                          <p className="font-semibold text-slate-900">
-                            {renderPlayerLink(score?.currentBowlerId, getPlayerName(score?.currentBowlerId))}
-                          </p>
-                          <p className="text-slate-700">
-                            {formatBowlingOvers(bowlerStat)}-{bowlerStat?.maidens ?? 0}-{bowlerStat?.runsConceded ?? 0}-{bowlerStat?.wickets ?? 0}{" "}
-                            <span className="text-slate-500">ECO {Number(bowlerStat?.economy ?? 0).toFixed(2)}</span>
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })()}
+                <LiveScoringPanel
+                  matchDetails={match}
+                  matchScore={score}
+                  allStats={playerStats}
+                  commentary={commentary}
+                  showBallInput={false}
+                  renderPlayerName={(playerId, fallbackName) => renderPlayerLink(playerId, fallbackName)}
+                />
 
                 <h3 className="font-semibold text-sm text-slate-900">Live Commentary</h3>
 

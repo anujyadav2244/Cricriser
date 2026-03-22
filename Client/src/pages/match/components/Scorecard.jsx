@@ -647,6 +647,8 @@ export default function Scorecard({
             <LiveScoringPanel
               matchDetails={matchDetails}
               matchScore={matchScore}
+              allStats={allStats}
+              commentary={commentary}
               onScoreUpdate={() => {
                 refreshScore();
                 fetchStats();
