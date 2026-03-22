@@ -86,7 +86,7 @@ export default function AddMatchScoreForm({
       setLoading(true);
 
       const res = await fetch(
-        "http://localhost:8080/api/match/score/add",
+        "https://cricriser.up.railway.app/api/match/score/add",
         {
           method: "POST",
           headers: {

@@ -49,5 +49,5 @@ cd cricriser/server
 ./mvnw spring-boot:run
 ```
 
-Backend will be available at `http://localhost:8080`.
+Backend will be available at `https://cricriser.up.railway.app`.
 

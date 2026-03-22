@@ -91,7 +91,7 @@ export default function Scorecard({
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        `http://localhost:8080/api/match-player-stats/match/${matchId}`,
+        `http://cricriser.up.railway.app/api/match-player-stats/match/${matchId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -113,7 +113,7 @@ export default function Scorecard({
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        `http://localhost:8080/api/ball-by-ball/match/${matchId}`,
+        `http://cricriser.up.railway.app/api/ball-by-ball/match/${matchId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

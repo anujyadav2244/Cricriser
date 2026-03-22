@@ -21,7 +21,7 @@ export default function TeamOwnerDashboard() {
 
       try {
         const res = await axios.get(
-          "http://localhost:8080/api/teams/my",
+          "https://cricriser.up.railway.app/api/teams/my",
           {
             headers: {
               Authorization: `Bearer ${token}`,

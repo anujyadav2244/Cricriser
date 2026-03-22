@@ -31,7 +31,7 @@ export function LoginForm({ role }) {
     try {
       console.log("Logging In for ", role)
       // 🔥 CHANGED: fetch with headers + role
-      const res = await fetch("http://localhost:8080/api/auth/login", {
+      const res = await fetch("http://cricriser.up.railway.app/api/auth/login", {
         method: "POST", // 🔥 CHANGED
         headers: {
           "Content-Type": "application/json", // 🔥 CHANGED

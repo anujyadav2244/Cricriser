@@ -20,7 +20,7 @@ export default function BattingStats({ matchScore, matchDetails }) {
         if (!matchScore?.strikerId || !matchScore?.nonStrikerId) return;
 
         fetch(
-            `http://localhost:8080/api/match-player-stats/batting` +
+            `http://cricriser.up.railway.app/api/match-player-stats/batting` +
             `?matchId=${matchScore.matchId}` +
             `&strikerId=${matchScore.strikerId}` +
             `&nonStrikerId=${matchScore.nonStrikerId}`,

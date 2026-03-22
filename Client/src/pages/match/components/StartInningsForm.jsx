@@ -54,7 +54,7 @@ export default function StartInningsForm({
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        "http://localhost:8080/api/match/score/start-innings",
+        "https://cricriser.up.railway.app/api/match/score/start-innings",
         {
           method: "POST",
           headers: {
