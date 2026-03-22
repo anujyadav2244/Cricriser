@@ -1,53 +1,69 @@
-#  🏏Cricriser – Local Cricket Scoring Backend
+# Cricriser
 
-Cricriser is the backend service for a local cricket tournament scoring web app. It provides APIs to manage leagues, teams, players, matches, scores, and real-time commentary.
+Full-stack local cricket scoring app with:
+- `Client`: React + Vite frontend
+- `Server`: Spring Boot + MongoDB backend
 
----
+## Local Setup
 
-## 🚧 Status
-Backend is under active development. Core features like authentication, match management, and score updates are implemented.  
-
----
-
-## 📌 MVP Scope
-- User signup/login with JWT-based authentication
-- Email verification via OTP
-- CRUD operations for leagues, teams, players, and matches
-- Real-time score updates
-- Ball-by-ball commentary
-- Admin controls for managing tournaments, teams, and players
-
----
-
-## 🧰 Tech Stack
-- **Backend:** Java, Spring Boot  
-- **Database:** MongoDB Atlas  
-- **Security:** Spring Security, JWT  
-- **Email Verification:** SMTP-based OTP  
-
----
-
-## 📂 Setup Instructions
-
-### Clone the repository
-```bash
-https://github.com/anujyadav2244/Cricriser-Local-Cricket-Scoring-Web-App.git
-cd cricriser/server
-````
-
-### Configure environment
-
-* Update `src/main/resources/application.properties` with:
-
-  * MongoDB URI
-  * JWT secret
-  * SMTP mail config (for OTP)
-
-### Run the backend
+### 1. Backend
+1. Go to `Server`.
+2. Copy `.env.example` values into your deployment/local environment (or map them into `application.properties`).
+3. Run:
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
-Backend will be available at `https://cricriser.up.railway.app`.
+Backend runs on `http://localhost:8080` by default.
 
+### 2. Frontend
+1. Go to `Client`.
+2. Create `.env` from `.env.example`.
+3. Run:
+
+```bash
+npm install
+npm run dev
+```
+
+Frontend runs on `http://localhost:5173` by default.
+
+## Deployment
+
+### Backend (Railway)
+1. Deploy `Server` folder as a Java service.
+2. Set environment variables from [Server/.env.example](Server/.env.example).
+3. Set `APP_ALLOWED_ORIGINS` to:
+   `https://cricriser.vercel.app,https://*.vercel.app,http://localhost:5173`
+4. Build/start can use defaults from Railway Java detection:
+   - Build: `./mvnw clean package -DskipTests`
+   - Start: `java -jar target/*.jar`
+
+### Frontend (Vercel)
+1. Deploy `Client` folder.
+2. Set `VITE_API_BASE_URL` to:
+   `https://cricriser.up.railway.app`
+3. SPA routes are handled by [Client/vercel.json](Client/vercel.json), so direct refresh on routes works.
+
+### Environment Variables
+
+#### Frontend
+- See [Client/.env.example](Client/.env.example)
+- Required:
+  - `VITE_API_BASE_URL`
+
+#### Backend
+- See [Server/.env.example](Server/.env.example)
+- Core required in production:
+  - `SPRING_DATA_MONGODB_URI`
+  - `SPRING_DATA_MONGODB_DATABASE`
+  - `APP_JWT_SECRET`
+  - `APP_ALLOWED_ORIGINS`
+- Optional:
+  - SMTP vars + `EMAIL_ENABLED=true`
+  - Cloudinary vars
+
+## Notes
+- CORS is centralized in `Server/src/main/java/com/cricriser/cricriser/config/CorsConfig.java` and reads `APP_ALLOWED_ORIGINS` (comma-separated).
+- Do not commit real secrets. Use environment variables on hosting platforms.

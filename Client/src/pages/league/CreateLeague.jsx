@@ -13,8 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import axios from "@/api/axios";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+import BASE_URL from "@/api/config";
 
 export default function CreateLeague() {
 
@@ -170,7 +169,7 @@ export default function CreateLeague() {
       const fd = new FormData();
       fd.append("league", JSON.stringify(payload));
 
-      const res = await fetch(`${API_BASE}/api/leagues/create`, {
+      const res = await fetch(`${BASE_URL}/api/leagues/create`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,

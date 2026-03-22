@@ -3,7 +3,6 @@ package com.cricriser.cricriser.auth;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -19,10 +18,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(
-        origins = "${app.allowed.origins:cricriser.vercel.app}",
-        allowCredentials = "true"
-)
 public class AuthController {
 
     private final AuthService authService;

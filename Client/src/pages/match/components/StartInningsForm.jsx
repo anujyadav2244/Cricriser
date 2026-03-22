@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
+import BASE_URL from "@/api/config";
 
 export default function StartInningsForm({
   match,
@@ -54,7 +55,7 @@ export default function StartInningsForm({
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/match/score/start-innings`,
+        `${BASE_URL}/api/match/score/start-innings`,
         {
           method: "POST",
           headers: {

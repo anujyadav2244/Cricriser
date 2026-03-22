@@ -50,6 +50,7 @@ export const playerResetPassword = ({
 // DELETE ACCOUNT
 export const deletePlayerAccount = () =>
   api.delete("/api/auth/delete");
+export const playerDelete = deletePlayerAccount;
 
 /* ================= PLAYER PROFILE ================= */
 

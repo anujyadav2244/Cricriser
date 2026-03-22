@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "@/api/axios";
+import BASE_URL from "@/api/config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -21,7 +22,7 @@ export default function TeamOwnerDashboard() {
 
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/teams/my`,
+          `${BASE_URL}/api/teams/my`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

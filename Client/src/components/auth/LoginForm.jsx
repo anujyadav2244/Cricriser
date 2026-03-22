@@ -6,6 +6,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { useNavigate, Link } from "react-router-dom";
 import { ROLE_ROUTES } from "@/api/authMap";
+import BASE_URL from "@/api/config";
 
 export function LoginForm({ role }) {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ export function LoginForm({ role }) {
     try {
       console.log("Logging In for ", role)
       // 🔥 CHANGED: fetch with headers + role
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, {
+      const res = await fetch(`${BASE_URL}/api/auth/login`, {
         method: "POST", // 🔥 CHANGED
         headers: {
           "Content-Type": "application/json", // 🔥 CHANGED

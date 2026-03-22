@@ -4,6 +4,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { humanizeText } from "@/lib/utils";
+import BASE_URL from "@/api/config";
 
 export default function LeagueDetails() {
   const { id } = useParams();
@@ -22,7 +23,7 @@ export default function LeagueDetails() {
 
         /* ================= FETCH LEAGUE ================= */
         const leagueRes = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/leagues/${id}`,
+          `${BASE_URL}/api/leagues/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -39,7 +40,7 @@ export default function LeagueDetails() {
 
         /* ================= FETCH MATCHES ================= */
         const matchRes = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/matches/league/${id}`,
+          `${BASE_URL}/api/matches/league/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -58,7 +59,7 @@ export default function LeagueDetails() {
           (matchData || []).map(async (m) => {
             try {
               const scoreRes = await fetch(
-                `${import.meta.env.VITE_API_BASE_URL}/api/match/score/${m.id}`,
+                `${BASE_URL}/api/match/score/${m.id}`,
                 {
                   headers: {
                     Authorization: `Bearer ${token}`,

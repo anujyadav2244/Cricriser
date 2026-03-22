@@ -9,6 +9,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import BASE_URL from "@/api/config";
 
 export default function BallInputPanel({
   matchScore,
@@ -232,7 +233,7 @@ export default function BallInputPanel({
       };
 
       const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/ball-by-ball/record`,
+        `${BASE_URL}/api/ball-by-ball/record`,
         {
           method: "POST",
           headers: {

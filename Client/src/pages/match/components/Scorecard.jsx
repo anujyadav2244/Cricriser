@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import LiveScoringPanel from "./LiveScoringPanel";
 import { Card, CardContent } from "@/components/ui/card";
 import { humanizeText } from "@/lib/utils";
+import BASE_URL from "@/api/config";
 
 export default function Scorecard({
   matchId,
@@ -91,7 +92,7 @@ export default function Scorecard({
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/match-player-stats/match/${matchId}`,
+        `${BASE_URL}/api/match-player-stats/match/${matchId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -113,7 +114,7 @@ export default function Scorecard({
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/ball-by-ball/match/${matchId}`,
+        `${BASE_URL}/api/ball-by-ball/match/${matchId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

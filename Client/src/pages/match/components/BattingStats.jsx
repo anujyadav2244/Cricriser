@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import BASE_URL from "@/api/config";
 
 export default function BattingStats({ matchScore, matchDetails }) {
     const [batting, setBatting] = useState(null);
@@ -20,7 +21,7 @@ export default function BattingStats({ matchScore, matchDetails }) {
         if (!matchScore?.strikerId || !matchScore?.nonStrikerId) return;
 
         fetch(
-            `${import.meta.env.VITE_API_BASE_URL}/api/match-player-stats/batting` +
+            `${BASE_URL}/api/match-player-stats/batting` +
             `?matchId=${matchScore.matchId}` +
             `&strikerId=${matchScore.strikerId}` +
             `&nonStrikerId=${matchScore.nonStrikerId}`,

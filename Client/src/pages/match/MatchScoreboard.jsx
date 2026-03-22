@@ -5,6 +5,7 @@ import AddMatchScoreForm from "./components/AddMatchScoreForm";
 import StartInningsForm from "./components/StartInningsForm";
 import ScoreHeader from "./components/ScoreHeader";
 import Scorecard from "./components/Scorecard";
+import BASE_URL from "@/api/config";
 
 export default function MatchScoreboard() {
   const { matchId } = useParams();
@@ -27,14 +28,14 @@ export default function MatchScoreboard() {
 
       // ===== MATCH DETAILS =====
       const matchRes = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/matches/${matchId}`,
+        `${BASE_URL}/api/matches/${matchId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setMatchDetails(await matchRes.json());
 
       // ===== MATCH SCORE =====
       const scoreRes = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/match/score/${matchId}`,
+        `${BASE_URL}/api/match/score/${matchId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -55,7 +56,7 @@ export default function MatchScoreboard() {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/match/score/${matchId}`,
+        `${BASE_URL}/api/match/score/${matchId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

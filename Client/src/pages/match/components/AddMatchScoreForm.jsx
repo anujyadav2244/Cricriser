@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { humanizeText } from "@/lib/utils";
+import BASE_URL from "@/api/config";
 
 export default function AddMatchScoreForm({
   matchDetails,
@@ -86,7 +87,7 @@ export default function AddMatchScoreForm({
       setLoading(true);
 
       const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/match/score/add`,
+        `${BASE_URL}/api/match/score/add`,
         {
           method: "POST",
           headers: {
