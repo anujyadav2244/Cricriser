@@ -202,7 +202,13 @@ export default function LeagueDetails() {
 
                     <p className="text-sm text-slate-400">
                       {m.scheduledDate
-                        ? new Date(m.scheduledDate).toDateString()
+                        ? new Date(m.scheduledDate).toLocaleString([], {
+                            year: "numeric",
+                            month: "short",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
                         : "—"}
                     </p>
 

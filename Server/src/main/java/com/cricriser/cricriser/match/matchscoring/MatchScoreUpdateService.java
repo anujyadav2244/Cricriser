@@ -1,7 +1,9 @@
 package com.cricriser.cricriser.match.matchscoring;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -205,16 +207,34 @@ public class MatchScoreUpdateService {
         MatchSchedule match = matchScheduleRepository.findById(matchId)
                 .orElseThrow(() -> new RuntimeException("Match not found"));
 
-        LocalDate today = LocalDate.now(ZoneId.systemDefault());
+        if (match.getScheduledDate() == null) {
+            throw new RuntimeException("Match date/time not scheduled");
+        }
 
-        LocalDate matchDate = match.getScheduledDate()
+        ZoneId zone = ZoneId.systemDefault();
+        LocalDateTime now = LocalDateTime.now(zone);
+
+        LocalDateTime matchDateTime = match.getScheduledDate()
                 .toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
+            .atZone(zone)
+            .toLocalDateTime();
 
-        if (!matchDate.equals(today)) {
+        LocalDate matchDate = matchDateTime.toLocalDate();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+        if (!now.toLocalDate().equals(matchDate)) {
             throw new RuntimeException(
-                    "Ball update allowed only on match date (" + matchDate + ")"
+                "Ball update allowed only on match date and time ("
+                + matchDateTime.format(formatter)
+                + ")"
+            );
+        }
+
+        if (now.isBefore(matchDateTime)) {
+            throw new RuntimeException(
+                "Ball update allowed only after scheduled time ("
+                + matchDateTime.format(formatter)
+                + ")"
             );
         }
     }

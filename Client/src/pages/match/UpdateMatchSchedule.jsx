@@ -14,7 +14,7 @@ export default function UpdateMatchSchedule() {
 
   const [league, setLeague] = useState(null);
   const [match, setMatch] = useState(null);
-  const [scheduledDate, setScheduledDate] = useState("");
+  const [scheduledDateTime, setScheduledDateTime] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -38,9 +38,7 @@ export default function UpdateMatchSchedule() {
         setMatch(matchData);
 
         if (matchData.scheduledDate) {
-          const date = new Date(matchData.scheduledDate);
-          const formattedDate = date.toISOString().split("T")[0];
-          setScheduledDate(formattedDate);
+          setScheduledDateTime(formatDateTimeForInput(matchData.scheduledDate));
         }
       } catch (err) {
         setError(err.message);
@@ -59,6 +57,13 @@ export default function UpdateMatchSchedule() {
     return date.toISOString().split("T")[0];
   };
 
+  const formatDateTimeForInput = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+    return date.toISOString().slice(0, 16);
+  };
+
   const getMinDate = () => {
     return league?.startDate ? formatDateForInput(league.startDate) : "";
   };
@@ -67,18 +72,37 @@ export default function UpdateMatchSchedule() {
     return league?.endDate ? formatDateForInput(league.endDate) : "";
   };
 
+  const getMinDateTime = () => {
+    const minDate = getMinDate();
+    return minDate ? `${minDate}T00:00` : "";
+  };
+
+  const getMaxDateTime = () => {
+    const maxDate = getMaxDate();
+    return maxDate ? `${maxDate}T23:59` : "";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!scheduledDate) {
-      toast.error("Please select a scheduled date");
+    if (!scheduledDateTime) {
+      toast.error("Please select a scheduled date and time");
       return;
     }
 
-    // Validate date is within league range
-    const selectedDate = new Date(scheduledDate);
+    // Validate selected date is within league range
+    const selectedDatePart = scheduledDateTime.split("T")[0];
+    const selectedDate = new Date(`${selectedDatePart}T00:00:00`);
     const leagueStart = league?.startDate ? new Date(league.startDate) : null;
     const leagueEnd = league?.endDate ? new Date(league.endDate) : null;
+
+    if (leagueStart) {
+      leagueStart.setHours(0, 0, 0, 0);
+    }
+
+    if (leagueEnd) {
+      leagueEnd.setHours(23, 59, 59, 999);
+    }
 
     if (leagueStart && selectedDate < leagueStart) {
       toast.error("Scheduled date cannot be before league start date");
@@ -93,7 +117,7 @@ export default function UpdateMatchSchedule() {
     try {
       setSubmitting(true);
       const updatePayload = {
-        scheduledDate: new Date(scheduledDate).toISOString(),
+        scheduledDate: new Date(scheduledDateTime).toISOString(),
       };
 
       await api.put(`/api/matches/${matchId}`, updatePayload);
@@ -179,23 +203,23 @@ export default function UpdateMatchSchedule() {
                 </div>
               </div>
 
-              {/* Scheduled Date */}
+              {/* Scheduled Date & Time */}
               <div className="space-y-2">
-                <Label htmlFor="scheduledDate" className="text-slate-300">
-                  Scheduled Date
+                <Label htmlFor="scheduledDateTime" className="text-slate-300">
+                  Scheduled Date & Time
                 </Label>
                 <Input
-                  id="scheduledDate"
-                  type="date"
-                  value={scheduledDate}
-                  onChange={(e) => setScheduledDate(e.target.value)}
-                  min={getMinDate()}
-                  max={getMaxDate()}
+                  id="scheduledDateTime"
+                  type="datetime-local"
+                  value={scheduledDateTime}
+                  onChange={(e) => setScheduledDateTime(e.target.value)}
+                  min={getMinDateTime()}
+                  max={getMaxDateTime()}
                   className="bg-slate-800 border-slate-700 text-white"
                   required
                 />
                 <p className="text-xs text-slate-400">
-                  Must be between {formatDateForInput(league?.startDate)} and{" "}
+                  Date must be between {formatDateForInput(league?.startDate)} and{" "}
                   {formatDateForInput(league?.endDate)}
                 </p>
               </div>

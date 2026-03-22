@@ -1,7 +1,9 @@
 package com.cricriser.cricriser.match.matchscoring;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -428,19 +430,33 @@ public class MatchScoreService {
                 .orElseThrow(() -> new RuntimeException("Match not found"));
 
         if (match.getScheduledDate() == null) {
-            throw new RuntimeException("Match date not scheduled");
+            throw new RuntimeException("Match date/time not scheduled");
         }
 
-        LocalDate today = LocalDate.now(ZoneId.systemDefault());
+        ZoneId zone = ZoneId.systemDefault();
+        LocalDateTime now = LocalDateTime.now(zone);
 
-        LocalDate matchDate = match.getScheduledDate()
+        LocalDateTime matchDateTime = match.getScheduledDate()
                 .toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
+                .atZone(zone)
+                .toLocalDateTime();
 
-        if (!matchDate.equals(today)) {
+        LocalDate matchDate = matchDateTime.toLocalDate();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+        if (!now.toLocalDate().equals(matchDate)) {
             throw new RuntimeException(
-                    "Scoring allowed only on match date (" + matchDate + ")"
+                    "Scoring allowed only on match date and time ("
+                    + matchDateTime.format(formatter)
+                    + ")"
+            );
+        }
+
+        if (now.isBefore(matchDateTime)) {
+            throw new RuntimeException(
+                    "Scoring allowed only after scheduled time ("
+                    + matchDateTime.format(formatter)
+                    + ")"
             );
         }
     }
