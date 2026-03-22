@@ -9,6 +9,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { AUTH_API, ROLE_ROUTES } from "@/api/authMap";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 export default function VerifyForgotOtpForm({ role }) {
   const [searchParams] = useSearchParams();
@@ -61,9 +62,7 @@ export default function VerifyForgotOtpForm({ role }) {
       // ✅ Redirect to role-based login
       navigate(routes.login);
     } catch (err) {
-      setError(
-        err.response?.data?.error || "OTP verification failed"
-      );
+      setError(getApiErrorMessage(err, "OTP verification failed"));
     } finally {
       setLoading(false);
     }

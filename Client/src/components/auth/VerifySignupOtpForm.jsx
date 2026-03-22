@@ -8,6 +8,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { AUTH_API, ROLE_ROUTES } from "@/api/authMap";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 export default function VerifySignupOtpForm({ role }) {
   const [searchParams] = useSearchParams();
@@ -52,9 +53,7 @@ export default function VerifySignupOtpForm({ role }) {
       // ✅ OTP verified → redirect to role-based login
       navigate(routes.login);
     } catch (err) {
-      setError(
-        err.response?.data?.error || "Invalid or expired OTP"
-      );
+      setError(getApiErrorMessage(err, "Invalid or expired OTP"));
     } finally {
       setLoading(false);
     }

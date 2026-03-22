@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { AUTH_API, ROLE_ROUTES } from "@/api/authMap";
 import { Eye, EyeOff } from "lucide-react";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 export function RegisterForm({ role }) {
   const navigate = useNavigate();
@@ -62,21 +63,14 @@ export function RegisterForm({ role }) {
 
     } catch (err) {
       const status = err.response?.status;
-      const data = err.response?.data;
-
-      console.error("Signup error:", { status, data, err });
+      const message = getApiErrorMessage(err, "Registration failed. Please try again.");
 
       if (status === 409) {
         setError("This Email already exists");
       } else if (status === 400) {
-        // Show specific server error message
-        setError(data?.error || data?.message || "Invalid input. Please check all fields.");
-      } else if (data?.error) {
-        setError(data.error);
-      } else if (data?.message) {
-        setError(data.message);
+        setError(message);
       } else {
-        setError(err.message || "Registration failed. Please try again.");
+        setError(message);
       }
     } finally {
       setLoading(false);

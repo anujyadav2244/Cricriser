@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
 import { AUTH_API, ROLE_ROUTES } from "@/api/authMap";
 import { useAuthStore } from "@/store/auth.store";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 export default function ResetPasswordForm({ role }) {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ export default function ResetPasswordForm({ role }) {
       logout();
       navigate(routes.login);
     } catch (err) {
-      setError(err.response?.data?.error || "Reset failed");
+      setError(getApiErrorMessage(err, "Reset failed"));
     } finally {
       setLoading(false);
     }

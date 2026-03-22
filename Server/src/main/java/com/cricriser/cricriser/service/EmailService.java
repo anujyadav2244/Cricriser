@@ -1,5 +1,7 @@
 package com.cricriser.cricriser.service;
 
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -29,7 +31,7 @@ public class EmailService {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
-            helper.setTo(toEmail);
+            helper.setTo(Objects.requireNonNull(toEmail));
             helper.setSubject("Your cricriser OTP");
 
             String htmlContent = """
@@ -55,7 +57,7 @@ public class EmailService {
                 </html>
             """.formatted(otp, otpValidMinutes);
 
-            helper.setText(htmlContent, true); // true = isHtml
+            helper.setText(Objects.requireNonNull(htmlContent), true); // true = isHtml
 
             mailSender.send(mimeMessage);
 
@@ -63,8 +65,7 @@ public class EmailService {
 
         } catch (MessagingException e) {
             System.err.println("[EmailService] Failed to send OTP email to: " + toEmail);
-            e.printStackTrace();
-            throw new RuntimeException("Failed to send OTP email. Please try again later.");
+            throw new RuntimeException("Failed to send OTP email. Please try again later.", e);
         }
     }
 }

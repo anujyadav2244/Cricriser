@@ -1,6 +1,7 @@
 package com.cricriser.cricriser.auth;
 
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -47,10 +48,9 @@ public class AuthService {
 
         authRepository.save(user);
 
-        String otp = otpService.generateOtp(user.getEmail(), "SIGNUP");
-
-    }
+        otpService.generateOtp(user.getEmail(), "SIGNUP");
         return "OTP has been sent to your email";
+    }
 
     // ================= VERIFY OTP =================
     public String verifyOtp(String email, String otp) {
@@ -73,19 +73,19 @@ public class AuthService {
         try {
             role = Role.valueOf(roleStr);
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid role");
+            throw new IllegalArgumentException("Invalid role");
         }
 
         AuthUser user = authRepository
                 .findByEmailAndRole(email, role)
-                .orElseThrow(() -> new RuntimeException("Invalid email or role"));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid email or role"));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new IllegalArgumentException("Invalid credentials");
         }
 
         if (!Boolean.TRUE.equals(user.getVerified())) {
-            throw new RuntimeException("Account not verified");
+            throw new IllegalArgumentException("Account not verified");
         }
 
         String token = jwtUtil.generateToken(
@@ -105,13 +105,11 @@ public class AuthService {
     public String forgotPassword(String email) {
 
         authRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        String otp = otpService.generateOtp(email, "FORGOT_PASSWORD");
-
-        // ❌ Email removed
-    }
+        otpService.generateOtp(email, "FORGOT_PASSWORD");
         return "OTP has been sent to your email";
+    }
 
     // ================= VERIFY FORGOT OTP =================
     public String verifyForgotOtp(String email, String otp, String newPassword) {
@@ -119,7 +117,7 @@ public class AuthService {
         otpService.verifyOtp(email, otp, "FORGOT_PASSWORD");
 
         AuthUser user = authRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         user.setPassword(passwordEncoder.encode(newPassword));
         authRepository.save(user);
@@ -131,10 +129,10 @@ public class AuthService {
     public String resetPassword(String email, String oldPassword, String newPassword) {
 
         AuthUser user = authRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new RuntimeException("Old password is incorrect");
+            throw new IllegalArgumentException("Old password is incorrect");
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
@@ -153,7 +151,8 @@ public class AuthService {
     }
 
     public void deleteAccount(String email) {
-        authRepository.delete(me(email));
+        AuthUser currentUser = me(email);
+        authRepository.delete(Objects.requireNonNull(currentUser));
     }
 
     public void deleteUserByEmail(String email) {

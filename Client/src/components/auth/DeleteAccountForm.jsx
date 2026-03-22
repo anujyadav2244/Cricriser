@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AUTH_API, ROLE_ROUTES } from "@/api/authMap";
 import { useAuthStore } from "@/store/auth.store";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 export default function DeleteAccount({ role }) {
   const navigate = useNavigate();
@@ -35,11 +36,7 @@ export default function DeleteAccount({ role }) {
       // ✅ Redirect to role login
       navigate(routes.login, { replace: true });
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          err.response?.data?.error ||
-          "Failed to delete account"
-      );
+      setError(getApiErrorMessage(err, "Failed to delete account"));
     } finally {
       setLoading(false);
     }

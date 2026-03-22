@@ -7,6 +7,7 @@ import { useAuthStore } from "@/store/auth.store";
 import { useNavigate, Link } from "react-router-dom";
 import { ROLE_ROUTES } from "@/api/authMap";
 import BASE_URL from "@/api/config";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 export function LoginForm({ role }) {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ export function LoginForm({ role }) {
       const data = await res.json(); // 🔥 CHANGED
 
       if (!res.ok) {
-        throw new Error(data.error || data.message || "Login failed");
+        throw { response: { data }, message: "Login failed" };
       }
 
 
@@ -67,7 +68,7 @@ export function LoginForm({ role }) {
       navigate(redirectRoute || "/", { replace: true });
 
     } catch (err) {
-      setError(err.message || "Invalid email or password");
+      setError(getApiErrorMessage(err, "Invalid email or password"));
     } finally {
       setLoading(false);
     }
