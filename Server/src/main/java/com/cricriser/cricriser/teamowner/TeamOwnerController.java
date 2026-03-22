@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/team-owner")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "${app.allowed.origins:http://localhost:5173}", allowCredentials = "true")
+@CrossOrigin(origins = "${app.allowed.origins:https://cricriser.vercel.app/}", allowCredentials = "true")
 public class TeamOwnerController {
 
     private final TeamOwnerService teamOwnerService;

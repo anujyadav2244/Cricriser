@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/teams")
-@CrossOrigin(origins = "${app.allowed.origins:http://localhost:5173}", allowCredentials = "true")
+@CrossOrigin(origins = "${app.allowed.origins:https://cricriser.vercel.app/}", allowCredentials = "true")
 @RequiredArgsConstructor
 public class TeamController {
 

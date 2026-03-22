@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/player")
 @RequiredArgsConstructor
 @CrossOrigin(
-        origins = "${app.allowed.origins:http://localhost:5173}",
+        origins = "${app.allowed.origins:https://cricriser.vercel.app/}",
         allowCredentials = "true"
 )
 public class PlayerController {

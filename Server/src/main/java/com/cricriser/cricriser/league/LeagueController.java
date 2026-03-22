@@ -18,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/leagues")
-@CrossOrigin(origins = "${app.allowed.origins:http://localhost:5173}", allowCredentials = "true")
+@CrossOrigin(origins = "${app.allowed.origins:https://cricriser.vercel.app/}", allowCredentials = "true")
 public class LeagueController {
 
     @Autowired
