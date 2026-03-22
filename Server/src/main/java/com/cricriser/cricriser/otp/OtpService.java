@@ -3,8 +3,11 @@ package com.cricriser.cricriser.otp;
 import java.time.LocalDateTime;
 import java.util.Random;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.cricriser.cricriser.service.EmailService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,6 +17,9 @@ public class OtpService {
 
     private final OtpRepository otpRepository;
     private final PasswordEncoder passwordEncoder;
+    
+    @Autowired(required = false)
+    private EmailService emailService;
 
     private static final int OTP_EXPIRY_MINUTES = 5;
 
@@ -32,6 +38,20 @@ public class OtpService {
         token.setUsed(false);
 
         otpRepository.save(token);
+        
+        // Send OTP via email if email service is available
+        if (emailService != null) {
+            try {
+                emailService.sendOtpEmail(email, otp);
+                System.out.println("[OtpService] OTP email sent for purpose: " + purpose);
+            } catch (Exception e) {
+                System.err.println("[OtpService] Failed to send OTP email: " + e.getMessage());
+                // Don't fail signup if email sending fails
+            }
+        } else {
+            System.out.println("[OtpService] Email service not enabled. OTP: " + otp);
+        }
+        
         return otp;
     }
 

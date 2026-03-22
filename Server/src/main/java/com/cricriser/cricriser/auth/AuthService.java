@@ -49,11 +49,8 @@ public class AuthService {
 
         String otp = otpService.generateOtp(user.getEmail(), "SIGNUP");
 
-        // ❌ Email removed
-        System.out.println("OTP (for demo): " + otp);
-
-        return "OTP generated (check console)";
     }
+        return "OTP has been sent to your email";
 
     // ================= VERIFY OTP =================
     public String verifyOtp(String email, String otp) {
@@ -113,10 +110,8 @@ public class AuthService {
         String otp = otpService.generateOtp(email, "FORGOT_PASSWORD");
 
         // ❌ Email removed
-        System.out.println("Forgot OTP (for demo): " + otp);
-
-        return "OTP generated (check console)";
     }
+        return "OTP has been sent to your email";
 
     // ================= VERIFY FORGOT OTP =================
     public String verifyForgotOtp(String email, String otp, String newPassword) {
