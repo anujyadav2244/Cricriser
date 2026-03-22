@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import com.cricriser.cricriser.otp.OtpService;
 import com.cricriser.cricriser.security.JwtBlacklistService;
 import com.cricriser.cricriser.security.JwtUtil;
-import com.cricriser.cricriser.service.EmailService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,7 +18,6 @@ public class AuthService {
     private final AuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final EmailService emailService;
     private final JwtBlacklistService jwtBlacklistService;
     private final OtpService otpService;
 
@@ -39,9 +37,11 @@ public class AuthService {
         authRepository.save(user);
 
         String otp = otpService.generateOtp(user.getEmail(), "SIGNUP");
-        emailService.sendOtpEmail(user.getEmail(), otp);
 
-        return "OTP sent to email";
+        // ❌ Email removed
+        System.out.println("OTP (for demo): " + otp);
+
+        return "OTP generated (check console)";
     }
 
     // ================= VERIFY OTP =================
@@ -62,37 +62,35 @@ public class AuthService {
     public Map<String, Object> login(String email, String password, String roleStr) {
 
         Role role;
-    try {
-        role = Role.valueOf(roleStr);
-    } catch (IllegalArgumentException e) {
-        throw new RuntimeException("Invalid role");
-    }
+        try {
+            role = Role.valueOf(roleStr);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid role");
+        }
 
-    AuthUser user = authRepository
-            .findByEmailAndRole(email, role)
-            .orElseThrow(() ->
-                    new RuntimeException("Invalid email or role")
-            );
+        AuthUser user = authRepository
+                .findByEmailAndRole(email, role)
+                .orElseThrow(() -> new RuntimeException("Invalid email or role"));
 
-    if (!passwordEncoder.matches(password, user.getPassword())) {
-        throw new RuntimeException("Invalid credentials");
-    }
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
 
-    if (!Boolean.TRUE.equals(user.getVerified())) {
-        throw new RuntimeException("Account not verified");
-    }
+        if (!Boolean.TRUE.equals(user.getVerified())) {
+            throw new RuntimeException("Account not verified");
+        }
 
-    String token = jwtUtil.generateToken(
-            user.getId(),
-            user.getEmail(),
-            user.getRole().name()
-    );
+        String token = jwtUtil.generateToken(
+                user.getId(),
+                user.getEmail(),
+                user.getRole().name()
+        );
 
-    return Map.of(
-            "token", token,
-            "email", user.getEmail(),
-            "role", user.getRole().name()
-    );
+        return Map.of(
+                "token", token,
+                "email", user.getEmail(),
+                "role", user.getRole().name()
+        );
     }
 
     // ================= FORGOT PASSWORD =================
@@ -102,9 +100,11 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         String otp = otpService.generateOtp(email, "FORGOT_PASSWORD");
-        emailService.sendOtpEmail(email, otp);
 
-        return "OTP sent";
+        // ❌ Email removed
+        System.out.println("Forgot OTP (for demo): " + otp);
+
+        return "OTP generated (check console)";
     }
 
     // ================= VERIFY FORGOT OTP =================
@@ -121,7 +121,7 @@ public class AuthService {
         return "Password updated successfully";
     }
 
-    // ================= RESET PASSWORD (LOGGED IN) =================
+    // ================= RESET PASSWORD =================
     public String resetPassword(String email, String oldPassword, String newPassword) {
 
         AuthUser user = authRepository.findByEmail(email)
@@ -153,5 +153,4 @@ public class AuthService {
     public void deleteUserByEmail(String email) {
         authRepository.deleteByEmail(email);
     }
-
 }
