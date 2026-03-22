@@ -152,6 +152,7 @@ export default function Scorecard({
     const bowler = getPlayerName(ball.bowlerId);
     const wicketType = String(ball?.wicketType || "").toUpperCase();
     const extraType = String(ball?.extraType || "").toUpperCase();
+    const runningRuns = Number(ball?.runningRuns || 0);
     const getNoBallTotalRuns = () => {
       const batRuns = Number(ball?.runs || 0);
       const boundaryRuns = Number(ball?.boundaryRuns || 0);
@@ -183,6 +184,11 @@ export default function Scorecard({
 
     if (ball.boundaryRuns === 6) {
       return `${bowler} to ${batter}, SIX!`;
+    }
+
+    if (ball.boundaryRuns === 4 && runningRuns > 0) {
+      const totalRuns = 4 + runningRuns;
+      return `${bowler} to ${batter}, FOUR + ${runningRuns} run${runningRuns > 1 ? "s" : ""} (Total ${totalRuns})`;
     }
 
     if (ball.boundaryRuns === 4) {

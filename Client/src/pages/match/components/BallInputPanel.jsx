@@ -388,7 +388,7 @@ export default function BallInputPanel({
 
             {boundaryRuns === 4 && (
               <div>
-                <p className="text-sm">Running Runs</p>
+                <p className="text-sm font-medium">Extra Running Runs After Four</p>
                 <div className="flex gap-2">
                   {[1, 2, 3, 4].map((r) => (
                     <Button

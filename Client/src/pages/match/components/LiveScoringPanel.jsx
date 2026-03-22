@@ -94,11 +94,7 @@ export default function LiveScoringPanel({
     const isNoBall = extraType === "NO_BALL" || extraType === "NB";
     const isBye = extraType === "BYE" || extraType === "B";
     const isLegBye = extraType === "LEG_BYE" || extraType === "LB";
-
-    const completedRuns =
-      Number(ball?.runs || 0) > 0
-        ? Number(ball?.runs || 0)
-        : Number(ball?.runningRuns || 0);
+    const completedRuns = Number(ball?.runs || ball?.runningRuns || 0);
 
     let total = 0;
     if (isWide || isNoBall) total += 1;

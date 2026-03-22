@@ -395,12 +395,14 @@ export default function PublicMatchDetails() {
     const wicketType = String(ball?.wicketType || "").toUpperCase();
     const extraType = String(ball?.extraType || "").toUpperCase();
     const getNoBallTotalRuns = () => {
-      const batRuns = Number(ball?.runs || 0);
+      const batRuns = Number(ball?.runs || ball?.runningRuns || 0);
       const boundaryRuns = Number(ball?.boundaryRuns || 0);
       const extraRuns = Number(ball?.extraRuns || 0);
       const overthrowRuns = ball?.overthrowBoundary ? 4 : 0;
       return 1 + batRuns + boundaryRuns + extraRuns + overthrowRuns;
     };
+
+    const runningRuns = Number(ball?.runningRuns || 0);
 
     if (extraType === "NO_BALL" || extraType === "NB") {
       const totalRuns = getNoBallTotalRuns();
@@ -437,6 +439,11 @@ export default function PublicMatchDetails() {
 
     if (Number(ball?.boundaryRuns) === 6) {
       return `${bowler} to ${batter}, SIX!`;
+    }
+
+    if (Number(ball?.boundaryRuns) === 4 && runningRuns > 0) {
+      const totalRuns = 4 + runningRuns;
+      return `${bowler} to ${batter}, FOUR + ${runningRuns} run${runningRuns > 1 ? "s" : ""} (Total ${totalRuns})`;
     }
 
     if (Number(ball?.boundaryRuns) === 4) {
