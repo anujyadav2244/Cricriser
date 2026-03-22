@@ -1,6 +1,7 @@
 package com.cricriser.cricriser.service;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
 @Service
+@ConditionalOnProperty(name = "email.enabled", havingValue = "true")
 public class EmailService {
 
     private final JavaMailSender mailSender;
