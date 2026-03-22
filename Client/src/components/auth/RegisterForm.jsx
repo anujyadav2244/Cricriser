@@ -64,16 +64,19 @@ export function RegisterForm({ role }) {
       const status = err.response?.status;
       const data = err.response?.data;
 
+      console.error("Signup error:", { status, data, err });
+
       if (status === 409) {
         setError("This Email already exists");
       } else if (status === 400) {
-        setError("Invalid input. Please check all fields.");
+        // Show specific server error message
+        setError(data?.error || data?.message || "Invalid input. Please check all fields.");
       } else if (data?.error) {
         setError(data.error);
       } else if (data?.message) {
         setError(data.message);
       } else {
-        setError("Registration failed. Please try again.");
+        setError(err.message || "Registration failed. Please try again.");
       }
     } finally {
       setLoading(false);

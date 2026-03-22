@@ -27,24 +27,34 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody AuthUser user) {
         try {
+            System.out.println("=== SIGNUP REQUEST RECEIVED ===");
+            System.out.println("User object: " + user);
+            System.out.println("Email: " + user.getEmail());
+            System.out.println("Password: " + (user.getPassword() != null ? "***" : "NULL"));
+            System.out.println("Role: " + user.getRole());
+            System.out.println("Name: " + user.getName());
+            
             // Validate required fields
             if (user.getEmail() == null || user.getEmail().isBlank()) {
+                System.out.println("Email validation failed");
                 return ResponseEntity.badRequest().body(
                     Map.of("error", "Email is required")
                 );
             }
             if (user.getPassword() == null || user.getPassword().isBlank()) {
+                System.out.println("Password validation failed");
                 return ResponseEntity.badRequest().body(
                     Map.of("error", "Password is required")
                 );
             }
             if (user.getRole() == null) {
+                System.out.println("Role validation failed");
                 return ResponseEntity.badRequest().body(
                     Map.of("error", "Role is required")
                 );
             }
             
-            System.out.println("Signup Request - Email: " + user.getEmail() + ", Role: " + user.getRole() + ", Name: " + user.getName());
+            System.out.println("All validations passed, calling authService.signup");
             
             return ResponseEntity.ok(       
                     Map.of("message", authService.signup(user))
@@ -53,7 +63,7 @@ public class AuthController {
             System.err.println("Signup Error: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.badRequest().body(
-                Map.of("error", e.getMessage())
+                Map.of("error", e.getMessage() != null ? e.getMessage() : "An error occurred during signup")
             );
         }
     }

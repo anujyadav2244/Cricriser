@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -43,6 +44,21 @@ public class GlobalExceptionHandler {
                 .body(Map.of(
                         "error", "VALIDATION_ERROR",
                         "message", message
+                ));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<?> handleJsonParseError(HttpMessageNotReadableException ex) {
+        String message = ex.getMessage();
+        if (message != null && message.contains("role")) {
+            message = "Invalid role. Valid values are: ADMIN, TEAM_OWNER, PLAYER, USER";
+        }
+        
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                        "error", "INVALID_JSON",
+                        "message", message != null ? message : "Invalid request format"
                 ));
     }
 
