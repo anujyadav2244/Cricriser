@@ -1020,46 +1020,39 @@ export default function PublicMatchDetails() {
 
           {activeTab === "SCORECARD" && (
             <Card className="bg-white border-slate-200 shadow-sm">
-              <CardContent className="p-6 space-y-6">
+              <CardContent className="p-6">
                 {(() => {
-                  const [firstInningsTeamId, secondInningsTeamId] = getInningsOrderIds();
+                  const battingTeamId = score?.battingTeamId || null;
+                  const bowlingTeamId = battingTeamId
+                    ? battingTeamId === team1Id
+                      ? team2Id
+                      : team1Id
+                    : null;
 
-                  const getTeamView = (id) => {
-                    const isTeam1 = id === team1Id;
-                    const playingXIList = isTeam1 ? team1PlayingXI : team2PlayingXI;
-                    const squadIds = isTeam1 ? team1SquadIds : team2SquadIds;
-                    const currentStrikerId = score?.battingTeamId === id ? score?.strikerId : null;
-                    const currentNonStrikerId = score?.battingTeamId === id ? score?.nonStrikerId : null;
+                  const battingTeamName = battingTeamId
+                    ? battingTeamId === team1Id
+                      ? teamAName
+                      : teamBName
+                    : "-";
 
-                    return {
-                      teamId: id,
-                      teamName: isTeam1 ? teamAName : teamBName,
-                      teamScore: isTeam1 ? score?.teamA : score?.teamB,
-                      battingList: buildBattingList(
-                        id,
-                        playingXIList,
-                        currentStrikerId,
-                        currentNonStrikerId,
-                        squadIds
-                      ),
-                      bowlingList: bowlingStats
-                        .filter((s) => !belongsToTeam(s, id, squadIds))
-                        .sort((a, b) => b.wickets - a.wickets || a.economy - b.economy),
-                      playingXIList,
-                      strikerId: currentStrikerId,
-                      nonStrikerId: currentNonStrikerId,
-                      outBatterIds: isTeam1 ? (score?.team1OutBatters || []) : (score?.team2OutBatters || []),
-                    };
-                  };
-
-                  const firstView = getTeamView(firstInningsTeamId);
-                  const secondView = getTeamView(secondInningsTeamId);
+                  const bowlingTeamName = bowlingTeamId
+                    ? bowlingTeamId === team1Id
+                      ? teamAName
+                      : teamBName
+                    : "-";
 
                   return (
-                    <>
-                      {renderTeamScorecard(firstView)}
-                      {renderTeamScorecard(secondView)}
-                    </>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Currently Batting</p>
+                        <p className="mt-2 text-xl font-bold text-slate-900">{battingTeamName}</p>
+                      </div>
+
+                      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Currently Bowling</p>
+                        <p className="mt-2 text-xl font-bold text-slate-900">{bowlingTeamName}</p>
+                      </div>
+                    </div>
                   );
                 })()}
               </CardContent>
