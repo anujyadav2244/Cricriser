@@ -1,6 +1,10 @@
 export function getApiErrorMessage(error, fallback = "Something went wrong") {
   const data = error?.response?.data;
 
+  if (error?.message === "Network Error" || error?.code === "ERR_NETWORK") {
+    return "Cannot reach server. Check API URL, backend status, and CORS settings.";
+  }
+
   if (typeof data === "string" && data.trim()) {
     return data;
   }

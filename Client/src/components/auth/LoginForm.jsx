@@ -5,17 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "@/store/auth.store";
 import { useNavigate, Link } from "react-router-dom";
-import { ROLE_ROUTES } from "@/api/authMap";
-import BASE_URL from "@/api/config";
+import { AUTH_API, ROLE_ROUTES } from "@/api/authMap";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 export function LoginForm({ role }) {
   const navigate = useNavigate();
   const setAuth = useAuthStore((s) => s.setAuth);
 
+  const api = AUTH_API[role];
   const routes = ROLE_ROUTES[role];
 
-  if (!routes) {
+  if (!api || !routes) {
     throw new Error(`Invalid role provided to LoginForm: ${role}`);
   }
 
@@ -31,28 +31,9 @@ export function LoginForm({ role }) {
     setError(null);
 
     try {
-      console.log("Logging In for ", role)
-      // 🔥 CHANGED: fetch with headers + role
-      const res = await fetch(`${BASE_URL}/api/auth/login`, {
-        method: "POST", // 🔥 CHANGED
-        headers: {
-          "Content-Type": "application/json", // 🔥 CHANGED
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          role, // 🔥 CHANGED: role sent to backend
-        }),
-      });
-
-      const data = await res.json(); // 🔥 CHANGED
-
-      if (!res.ok) {
-        throw { response: { data }, message: "Login failed" };
-      }
+      const { data } = await api.login({ email, password });
 
 
-      // 🔥 CHANGED: store auth data
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
 
@@ -61,10 +42,7 @@ export function LoginForm({ role }) {
         role: data.role,
       });
 
-      console.log("Login Successful")
-      // 🔥 CHANGED: redirect based on role from backend
       const redirectRoute = ROLE_ROUTES[data.role]?.dashboard;
-      console.log(redirectRoute )
       navigate(redirectRoute || "/", { replace: true });
 
     } catch (err) {
