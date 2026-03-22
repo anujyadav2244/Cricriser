@@ -41,7 +41,12 @@ public class EmailService {
 
             helper.setTo(Objects.requireNonNull(toEmail));
             helper.setFrom(Objects.requireNonNull(senderEmail));
+            helper.setReplyTo(Objects.requireNonNull(senderEmail));
             helper.setSubject("Your cricriser OTP");
+
+                String textContent = "Your Cricriser OTP is " + otp
+                    + ". It is valid for " + otpValidMinutes
+                    + " minutes. If you did not request this, please ignore this message.";
 
             String htmlContent = """
                 <html>
@@ -66,7 +71,7 @@ public class EmailService {
                 </html>
             """.formatted(otp, otpValidMinutes);
 
-            helper.setText(Objects.requireNonNull(htmlContent), true); // true = isHtml
+            helper.setText(textContent, Objects.requireNonNull(htmlContent));
 
             mailSender.send(mimeMessage);
 

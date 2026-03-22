@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,11 @@ public class OtpService {
     private final PasswordEncoder passwordEncoder;
     private final Optional<EmailService> emailService;
 
-    private static final int OTP_EXPIRY_MINUTES = 5;
+    @Value("${app.otp.valid-minutes:10}")
+    private int otpValidMinutes;
+
+    @Value("${app.otp.log-to-console:true}")
+    private boolean logOtpToConsole;
 
     public String generateOtp(String email, String purpose) {
 
@@ -32,7 +37,7 @@ public class OtpService {
         token.setEmail(email);
         token.setPurpose(purpose);
         token.setOtp(passwordEncoder.encode(otp));
-        token.setExpiresAt(LocalDateTime.now().plusMinutes(OTP_EXPIRY_MINUTES));
+        token.setExpiresAt(LocalDateTime.now().plusMinutes(otpValidMinutes));
         token.setUsed(false);
 
         otpRepository.save(token);
@@ -42,6 +47,9 @@ public class OtpService {
             try {
                 emailService.get().sendOtpEmail(email, otp);
                 System.out.println("[OtpService] OTP email sent for purpose: " + purpose);
+                if (logOtpToConsole) {
+                    System.out.println("[OtpService] OTP for " + email + " (" + purpose + "): " + otp);
+                }
             } catch (RuntimeException e) {
                 System.err.println("[OtpService] Email delivery failed for " + email + " reason: " + e.getMessage());
                 System.out.println("[OtpService] Fallback OTP for " + email + " (" + purpose + "): " + otp);
