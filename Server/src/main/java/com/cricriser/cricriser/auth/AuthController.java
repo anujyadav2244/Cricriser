@@ -26,9 +26,7 @@ public class AuthController {
     // ================= SIGNUP =================
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody AuthUser user) {
-        return ResponseEntity.ok(
-                Map.of("message", authService.signup(user))
-        );
+                return ResponseEntity.ok(authService.signupResponse(user));
     }
 
     // ================= VERIFY SIGNUP OTP =================
@@ -62,10 +60,7 @@ public class AuthController {
     // ================= FORGOT PASSWORD =================
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgot(@RequestBody Map<String, String> body) {
-        return ResponseEntity.ok(
-                Map.of("message",
-                        authService.forgotPassword(body.get("email")))
-        );
+                return ResponseEntity.ok(authService.forgotPasswordResponse(body.get("email")));
     }
 
     // ================= VERIFY FORGOT OTP =================

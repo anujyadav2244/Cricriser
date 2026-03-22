@@ -3,6 +3,7 @@ package com.cricriser.cricriser.auth;
 import java.util.Map;
 import java.util.Objects;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +23,18 @@ public class AuthService {
     private final JwtBlacklistService jwtBlacklistService;
     private final OtpService otpService;
 
+    @Value("${app.otp.return-in-response:true}")
+    private boolean returnOtpInResponse;
+
+    private static final String OTP_MESSAGE = "OTP has been sent to your email";
+
     // ================= SIGNUP =================
     public String signup(AuthUser user) {
+        signupResponse(user);
+        return OTP_MESSAGE;
+    }
+
+    public Map<String, Object> signupResponse(AuthUser user) {
 
         // Validate required fields
         if (user.getEmail() == null || user.getEmail().isBlank()) {
@@ -48,8 +59,16 @@ public class AuthService {
 
         authRepository.save(user);
 
-        otpService.generateOtp(user.getEmail(), "SIGNUP");
-        return "OTP has been sent to your email";
+        String otp = otpService.generateOtp(user.getEmail(), "SIGNUP");
+
+        if (returnOtpInResponse) {
+            return Map.of(
+                    "message", OTP_MESSAGE,
+                    "otp", otp
+            );
+        }
+
+        return Map.of("message", OTP_MESSAGE);
     }
 
     // ================= VERIFY OTP =================
@@ -103,12 +122,25 @@ public class AuthService {
 
     // ================= FORGOT PASSWORD =================
     public String forgotPassword(String email) {
+        forgotPasswordResponse(email);
+        return OTP_MESSAGE;
+    }
+
+    public Map<String, Object> forgotPasswordResponse(String email) {
 
         authRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        otpService.generateOtp(email, "FORGOT_PASSWORD");
-        return "OTP has been sent to your email";
+        String otp = otpService.generateOtp(email, "FORGOT_PASSWORD");
+
+        if (returnOtpInResponse) {
+            return Map.of(
+                    "message", OTP_MESSAGE,
+                    "otp", otp
+            );
+        }
+
+        return Map.of("message", OTP_MESSAGE);
     }
 
     // ================= VERIFY FORGOT OTP =================

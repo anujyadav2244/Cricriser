@@ -14,6 +14,7 @@ import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 export default function VerifyForgotOtpForm({ role }) {
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email");
+  const prefilledOtp = searchParams.get("otp") || "";
   const navigate = useNavigate();
 
   const api = AUTH_API[role];
@@ -25,7 +26,7 @@ export default function VerifyForgotOtpForm({ role }) {
     );
   }
 
-  const [otp, setOtp] = useState("");
+  const [otp, setOtp] = useState(prefilledOtp);
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);

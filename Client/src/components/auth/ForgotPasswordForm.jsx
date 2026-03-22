@@ -24,12 +24,12 @@ export default function ForgotPasswordOtpForm({ role }) {
 
     try {
       setLoading(true);
-      await api.forgotPassword(email);
+      const { data } = await api.forgotPassword(email);
+
+      const otpQuery = data?.otp ? `&otp=${encodeURIComponent(data.otp)}` : "";
 
       navigate(
-        `/${role.toLowerCase().replace("_", "-")}/verify-forgot-otp?email=${encodeURIComponent(
-          email
-        )}`
+        `/${role.toLowerCase().replace("_", "-")}/verify-forgot-otp?email=${encodeURIComponent(email)}${otpQuery}`
       );
     } catch (err) {
       setError(getApiErrorMessage(err, "Failed to send OTP"));
