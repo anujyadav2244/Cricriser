@@ -12,25 +12,15 @@ export default function TeamOwnerSidebar({ open, onClose }) {
   };
 
   return (
-    <>
-      {/* OVERLAY (mobile only) */}
-      {open && (
-        <div
-          onClick={onClose}
-          className="fixed inset-0 bg-black/40 z-40 md:hidden"
-        />
-      )}
-
-      <aside
-        className={`
-          fixed md:static z-50
-          h-full w-64 md:shrink-0
-          bg-slate-900 border-r border-slate-800
-          transform transition-all duration-300
-          overflow-hidden md:translate-x-0
-          ${open ? "translate-x-0 md:w-64" : "-translate-x-full md:w-0"}
-        `}
-      >
+    <aside
+      className={`
+        h-full shrink-0
+        bg-slate-900 border-r border-slate-800
+        transition-all duration-300 overflow-hidden
+        ${open ? "w-64" : "w-0 border-r-0"}
+      `}
+    >
+      <div className="w-64">
         {/* PROFILE SECTION */}
         <div className="p-4 border-b border-slate-800">
           <div className="flex items-center gap-3">
@@ -84,7 +74,7 @@ export default function TeamOwnerSidebar({ open, onClose }) {
             Create Team
           </NavLink>
         </nav>
-      </aside>
-    </>
+      </div>
+    </aside>
   );
 }

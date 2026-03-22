@@ -57,7 +57,7 @@ export default function PlayerLayout() {
           onClose={() => setSidebarOpen(false)}
         />
 
-        <main className="flex-1 overflow-y-auto bg-slate-50 p-6">
+        <main className="min-w-0 flex-1 overflow-y-auto bg-slate-50 p-6">
           <Outlet context={{ player }} />
         </main>
       </div>
