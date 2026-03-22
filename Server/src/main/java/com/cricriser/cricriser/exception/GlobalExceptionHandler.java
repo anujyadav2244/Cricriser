@@ -32,6 +32,16 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<?> handleIllegalState(IllegalStateException ex) {
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(Map.of(
+                        "error", "SERVICE_UNAVAILABLE",
+                        "message", ex.getMessage() != null ? ex.getMessage() : "Required service is not available"
+                ));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidationError(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()

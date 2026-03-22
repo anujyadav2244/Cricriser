@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { AUTH_API } from "@/api/authMap";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 export default function ForgotPasswordOtpForm({ role }) {
   const navigate = useNavigate();
@@ -31,9 +32,7 @@ export default function ForgotPasswordOtpForm({ role }) {
         )}`
       );
     } catch (err) {
-      setError(
-        err.response?.data?.error || "Failed to send OTP"
-      );
+      setError(getApiErrorMessage(err, "Failed to send OTP"));
     } finally {
       setLoading(false);
     }
