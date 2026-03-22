@@ -15,10 +15,11 @@ export const playerVerifyOtp = ({ email, otp }) =>
   api.post("/api/auth/verify-otp", { email, otp });
 
 // LOGIN ✅ FIXED
-export const playerLogin = ({ email, password, role }) =>
+export const playerLogin = ({ email, password }) =>
   api.post("/api/auth/login", {
     email,
     password,
+    role: "PLAYER",
   });
 
 // FORGOT PASSWORD

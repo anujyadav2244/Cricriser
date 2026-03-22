@@ -24,6 +24,17 @@ public class AuthService {
     // ================= SIGNUP =================
     public String signup(AuthUser user) {
 
+        // Validate required fields
+        if (user.getEmail() == null || user.getEmail().isBlank()) {
+            throw new RuntimeException("Email is required");
+        }
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            throw new RuntimeException("Password is required");
+        }
+        if (user.getRole() == null) {
+            throw new RuntimeException("Role is required");
+        }
+
         authRepository.findByEmail(user.getEmail()).ifPresent(existing -> {
             if (Boolean.TRUE.equals(existing.getVerified())) {
                 throw new RuntimeException("Email already registered");

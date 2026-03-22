@@ -16,7 +16,7 @@ public class AuthUser {
     @Id
     private String id;
 
-    @NotBlank
+    // Optional for PLAYER (name is set later in player profile)
     private String name;
 
     @Email
@@ -26,6 +26,7 @@ public class AuthUser {
     @NotBlank
     private String password;
 
+    @NotBlank
     private Role role;   // ADMIN, TEAM_OWNER, PLAYER, USER
 
     private Boolean verified = false;
