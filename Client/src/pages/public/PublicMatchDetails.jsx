@@ -25,6 +25,7 @@ export default function PublicMatchDetails() {
   const [commentary, setCommentary] = useState([]);
   const [pointsTable, setPointsTable] = useState([]);
   const [pointsTeamNames, setPointsTeamNames] = useState({});
+  const [teamMetaById, setTeamMetaById] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState(() => resolveTab(searchParams.get("tab")));
@@ -140,6 +141,35 @@ export default function PublicMatchDetails() {
       const matchData = matchRes.data;
       setMatch(matchData);
 
+      const isValidTeamId = (value) =>
+        typeof value === "string" && /^[a-f0-9]{24}$/i.test(value.trim());
+
+      const matchTeamIds = [...new Set(
+        [
+          matchData?.team1?.id,
+          matchData?.team2?.id,
+          matchData?.team1Id,
+          matchData?.team2Id,
+        ].filter((id) => isValidTeamId(id))
+      )];
+
+      if (matchTeamIds.length > 0) {
+        const entries = await Promise.all(
+          matchTeamIds.map(async (id) => {
+            try {
+              const res = await api.get(`/api/teams/${id}/details`);
+              return [id, { name: res?.data?.name || null, logoUrl: res?.data?.logoUrl || null }];
+            } catch {
+              return [id, { name: null, logoUrl: null }];
+            }
+          })
+        );
+        setTeamMetaById((prev) => ({
+          ...prev,
+          ...Object.fromEntries(entries),
+        }));
+      }
+
       const requests = [
         api.get(`/api/match/scoreboard/${matchId}`).catch(() => null),
         api.get(`/api/match/score/${matchId}`).catch(() => null),
@@ -158,6 +188,27 @@ export default function PublicMatchDetails() {
       const commentaryData = Array.isArray(ballRes?.data)
         ? [...ballRes.data].sort(compareBallsDesc)
         : [];
+
+      const scoreTeamIds = [...new Set(
+        [normalizedScore?.teamA?.id, normalizedScore?.teamB?.id].filter((id) => isValidTeamId(id))
+      )];
+      const unresolvedScoreTeamIds = scoreTeamIds.filter((id) => !teamMetaById[id]);
+      if (unresolvedScoreTeamIds.length > 0) {
+        const entries = await Promise.all(
+          unresolvedScoreTeamIds.map(async (id) => {
+            try {
+              const res = await api.get(`/api/teams/${id}/details`);
+              return [id, { name: res?.data?.name || null, logoUrl: res?.data?.logoUrl || null }];
+            } catch {
+              return [id, { name: null, logoUrl: null }];
+            }
+          })
+        );
+        setTeamMetaById((prev) => ({
+          ...prev,
+          ...Object.fromEntries(entries),
+        }));
+      }
 
       setScore(normalizedScore);
       setPlayerStats(normalizedScore ? statsData : []);
@@ -216,12 +267,29 @@ export default function PublicMatchDetails() {
   const isCompleted = statusRaw === "COMPLETED";
   const showDetailedSquads = isLive || isCompleted;
 
-  const teamAName = match?.team1?.name || score?.teamA?.name || "Team A";
-  const teamBName = match?.team2?.name || score?.teamB?.name || "Team B";
-  const teamALogo = score?.teamA?.logoUrl || match?.team1?.logoUrl || null;
-  const teamBLogo = score?.teamB?.logoUrl || match?.team2?.logoUrl || null;
-  const team1Id = match?.team1?.id || score?.teamA?.id || "";
-  const team2Id = match?.team2?.id || score?.teamB?.id || "";
+  const team1Id = match?.team1?.id || score?.teamA?.id || match?.team1Id || score?.team1Id || "";
+  const team2Id = match?.team2?.id || score?.teamB?.id || match?.team2Id || score?.team2Id || "";
+
+  const teamAName =
+    match?.team1?.name ||
+    score?.teamA?.name ||
+    teamMetaById[team1Id]?.name ||
+    "Team A";
+  const teamBName =
+    match?.team2?.name ||
+    score?.teamB?.name ||
+    teamMetaById[team2Id]?.name ||
+    "Team B";
+  const teamALogo =
+    score?.teamA?.logoUrl ||
+    match?.team1?.logoUrl ||
+    teamMetaById[team1Id]?.logoUrl ||
+    null;
+  const teamBLogo =
+    score?.teamB?.logoUrl ||
+    match?.team2?.logoUrl ||
+    teamMetaById[team2Id]?.logoUrl ||
+    null;
 
   const team1FullSquad = match?.team1?.squad || [];
   const team2FullSquad = match?.team2?.squad || [];
@@ -852,12 +920,14 @@ export default function PublicMatchDetails() {
 
             <div className="mt-5 flex items-center justify-between gap-4">
               <div className="flex flex-col items-center gap-1 min-w-[140px]">
-                {teamALogo && (
+                {teamALogo ? (
                   <img
                     src={teamALogo}
                     alt={teamAName}
                     className="h-14 w-14 rounded-full object-contain border border-slate-300"
                   />
+                ) : (
+                  <div className="h-14 w-14 rounded-full bg-slate-200 border border-slate-300" />
                 )}
                 <p className="font-semibold text-slate-900 text-sm text-center">{teamAName}</p>
               </div>
@@ -884,12 +954,14 @@ export default function PublicMatchDetails() {
               </div>
 
               <div className="flex flex-col items-center gap-1 min-w-[140px]">
-                {teamBLogo && (
+                {teamBLogo ? (
                   <img
                     src={teamBLogo}
                     alt={teamBName}
                     className="h-14 w-14 rounded-full object-contain border border-slate-300"
                   />
+                ) : (
+                  <div className="h-14 w-14 rounded-full bg-slate-200 border border-slate-300" />
                 )}
                 <p className="font-semibold text-slate-900 text-sm text-center">{teamBName}</p>
               </div>
@@ -903,18 +975,22 @@ export default function PublicMatchDetails() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2 text-center">
                   <h3 className="text-base font-semibold text-slate-800">{teamAName}</h3>
-                  <div className="text-3xl font-bold text-slate-900">
+                  <div className="text-2xl sm:text-3xl font-bold text-slate-900 whitespace-nowrap">
                     {score?.teamA?.runs ?? 0}/{score?.teamA?.wickets ?? 0}
+                    <span className="text-base sm:text-lg font-semibold text-slate-500">
+                      {" "}({score?.teamA?.overs ?? "0.0"} Overs)
+                    </span>
                   </div>
-                  <div className="text-sm text-slate-500">{score?.teamA?.overs ?? "0.0"} Overs</div>
                 </div>
 
                 <div className="space-y-2 text-center">
                   <h3 className="text-base font-semibold text-slate-800">{teamBName}</h3>
-                  <div className="text-3xl font-bold text-slate-900">
+                  <div className="text-2xl sm:text-3xl font-bold text-slate-900 whitespace-nowrap">
                     {score?.teamB?.runs ?? 0}/{score?.teamB?.wickets ?? 0}
+                    <span className="text-base sm:text-lg font-semibold text-slate-500">
+                      {" "}({score?.teamB?.overs ?? "0.0"} Overs)
+                    </span>
                   </div>
-                  <div className="text-sm text-slate-500">{score?.teamB?.overs ?? "0.0"} Overs</div>
                 </div>
               </div>
             </CardContent>
@@ -1130,23 +1206,27 @@ export default function PublicMatchDetails() {
                 <div className="bg-slate-50 text-slate-900 rounded-t-lg px-6 py-4 border-b border-slate-200">
                   <div className="grid grid-cols-2 items-center font-bold text-xl gap-4">
                     <div className="flex items-center gap-3">
-                      {teamALogo && (
+                      {teamALogo ? (
                         <img
                           src={teamALogo}
                           alt={teamAName}
                           className="h-10 w-10 rounded-full object-contain border border-slate-300"
                         />
+                      ) : (
+                        <div className="h-10 w-10 rounded-full bg-slate-200 border border-slate-300" />
                       )}
                       <p>{teamAName}</p>
                     </div>
                     <div className="flex items-center justify-end gap-3">
                       <p className="text-right">{teamBName}</p>
-                      {teamBLogo && (
+                      {teamBLogo ? (
                         <img
                           src={teamBLogo}
                           alt={teamBName}
                           className="h-10 w-10 rounded-full object-contain border border-slate-300"
                         />
+                      ) : (
+                        <div className="h-10 w-10 rounded-full bg-slate-200 border border-slate-300" />
                       )}
                     </div>
                   </div>
@@ -1163,9 +1243,9 @@ export default function PublicMatchDetails() {
                     {primarySquadRows.map((row) => (
                       <div
                         key={row.key}
-                        className="grid grid-cols-1 md:grid-cols-2 border-b border-slate-200"
+                        className="grid grid-cols-2 border-b border-slate-200"
                       >
-                        <div className="p-5 flex items-center gap-4">
+                        <div className="p-3 sm:p-5 flex items-center gap-3 sm:gap-4 min-w-0">
                           <div className="h-12 w-12 rounded-full bg-slate-200 flex items-center justify-center text-slate-700 font-semibold">
                             {row.left?.photoUrl ? (
                               <img
@@ -1195,8 +1275,8 @@ export default function PublicMatchDetails() {
                           </div>
                         </div>
 
-                        <div className="p-5 border-l-0 md:border-l border-slate-200 flex items-center justify-end gap-4">
-                          <div className="text-right">
+                        <div className="p-3 sm:p-5 border-l border-slate-200 flex items-center justify-end gap-3 sm:gap-4 min-w-0">
+                          <div className="text-right min-w-0">
                             <p className="font-semibold text-slate-900">
                               {row.right?.id
                                 ? (
@@ -1241,9 +1321,9 @@ export default function PublicMatchDetails() {
                         {benchRows.map((row) => (
                           <div
                             key={`bench-${row.key}`}
-                            className="grid grid-cols-1 md:grid-cols-2 border-b border-slate-200"
+                            className="grid grid-cols-2 border-b border-slate-200"
                           >
-                            <div className="p-5 flex items-center gap-4">
+                            <div className="p-3 sm:p-5 flex items-center gap-3 sm:gap-4 min-w-0">
                               <div className="h-12 w-12 rounded-full bg-slate-200 flex items-center justify-center text-slate-700 font-semibold">
                                 {row.left?.photoUrl ? (
                                   <img
@@ -1272,8 +1352,8 @@ export default function PublicMatchDetails() {
                                 <p className="text-sm text-slate-500">{humanizeText(row.left?.role) || "-"}</p>
                               </div>
                             </div>
-                            <div className="p-5 border-l-0 md:border-l border-slate-200 flex items-center justify-end gap-4">
-                              <div className="text-right">
+                            <div className="p-3 sm:p-5 border-l border-slate-200 flex items-center justify-end gap-3 sm:gap-4 min-w-0">
+                              <div className="text-right min-w-0">
                                 <p className="font-semibold text-slate-900">
                                   {row.right?.id
                                     ? (
@@ -1317,9 +1397,9 @@ export default function PublicMatchDetails() {
                   {supportStaffRows.map((row) => (
                     <div
                       key={`staff-${row.key}`}
-                      className="grid grid-cols-1 md:grid-cols-2 border-b border-slate-200"
+                      className="grid grid-cols-2 border-b border-slate-200"
                     >
-                      <div className="p-5 flex items-center gap-4">
+                      <div className="p-3 sm:p-5 flex items-center gap-3 sm:gap-4 min-w-0">
                         <div className="h-12 w-12 rounded-full bg-slate-200 flex items-center justify-center text-slate-700 font-semibold">
                           {getInitials(row.left?.name)}
                         </div>
@@ -1328,8 +1408,8 @@ export default function PublicMatchDetails() {
                           <p className="text-sm text-slate-500">{humanizeText(row.left?.role) || "-"}</p>
                         </div>
                       </div>
-                      <div className="p-5 border-l-0 md:border-l border-slate-200 flex items-center justify-end gap-4">
-                        <div className="text-right">
+                      <div className="p-3 sm:p-5 border-l border-slate-200 flex items-center justify-end gap-3 sm:gap-4 min-w-0">
+                        <div className="text-right min-w-0">
                           <p className="font-semibold text-slate-900">{row.right?.name || "-"}</p>
                           <p className="text-sm text-slate-500">{humanizeText(row.right?.role) || "-"}</p>
                         </div>
