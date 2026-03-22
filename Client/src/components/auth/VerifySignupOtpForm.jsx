@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation, useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -11,13 +11,8 @@ import { AUTH_API, ROLE_ROUTES } from "@/api/authMap";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 export default function VerifySignupOtpForm({ role }) {
-  const location = useLocation();
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email");
-  const prefilledOtp =
-    searchParams.get("otp")
-    || location.state?.prefilledOtp
-    || "";
   const navigate = useNavigate();
 
   const api = AUTH_API[role];
@@ -29,7 +24,7 @@ export default function VerifySignupOtpForm({ role }) {
     );
   }
 
-  const [otp, setOtp] = useState(prefilledOtp);
+  const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -98,12 +93,6 @@ export default function VerifySignupOtpForm({ role }) {
             OTP is valid for{" "}
             <span className="font-medium">10 minutes</span>
           </p>
-
-          {prefilledOtp && (
-            <p className="text-xs text-amber-600 text-center">
-              Debug mode: OTP was auto-filled from server response.
-            </p>
-          )}
 
           {error && (
             <p className="text-sm text-red-500 text-center">

@@ -23,7 +23,7 @@ public class AuthService {
     private final JwtBlacklistService jwtBlacklistService;
     private final OtpService otpService;
 
-    @Value("${app.otp.return-in-response:true}")
+    @Value("${app.otp.return-in-response:false}")
     private boolean returnOtpInResponse;
 
     private static final String OTP_MESSAGE = "OTP has been sent to your email";

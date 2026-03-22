@@ -24,16 +24,10 @@ export default function ForgotPasswordOtpForm({ role }) {
 
     try {
       setLoading(true);
-      const { data } = await api.forgotPassword(email);
-
-      const otpValue = data?.otp || "";
-      const otpQuery = otpValue ? `&otp=${encodeURIComponent(otpValue)}` : "";
+      await api.forgotPassword(email);
 
       navigate(
-        `/${role.toLowerCase().replace("_", "-")}/verify-forgot-otp?email=${encodeURIComponent(email)}${otpQuery}`,
-        {
-          state: { prefilledOtp: otpValue },
-        }
+        `/${role.toLowerCase().replace("_", "-")}/verify-forgot-otp?email=${encodeURIComponent(email)}`
       );
     } catch (err) {
       setError(getApiErrorMessage(err, "Failed to send OTP"));

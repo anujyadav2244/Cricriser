@@ -55,15 +55,10 @@ export function RegisterForm({ role }) {
           ? { email, password }
           : { name: name.trim(), email, password };
 
-      const { data } = await api.signup(payload);
-
-      const otpValue = data?.otp || "";
-      const otpQuery = otpValue ? `&otp=${encodeURIComponent(otpValue)}` : "";
+      await api.signup(payload);
 
       // ✅ Use navigate instead of window.location.href
-      navigate(`${routes.verifySignupOtp}?email=${encodeURIComponent(email)}${otpQuery}`, {
-        state: { prefilledOtp: otpValue },
-      });
+      navigate(`${routes.verifySignupOtp}?email=${encodeURIComponent(email)}`);
 
     } catch (err) {
       const status = err.response?.status;
