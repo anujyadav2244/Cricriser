@@ -37,13 +37,18 @@ public class OtpService {
 
         otpRepository.save(token);
         
-        // OTP-based auth depends on email delivery; fail fast if unavailable.
-        EmailService sender = emailService.orElseThrow(
-                () -> new IllegalStateException("OTP email service is disabled. Please enable EMAIL_ENABLED and mail credentials.")
-        );
-
-        sender.sendOtpEmail(email, otp);
-        System.out.println("[OtpService] OTP email sent for purpose: " + purpose);
+        // Graceful fallback for deployments where SMTP is not configured yet.
+        if (emailService.isPresent()) {
+            try {
+                emailService.get().sendOtpEmail(email, otp);
+                System.out.println("[OtpService] OTP email sent for purpose: " + purpose);
+            } catch (RuntimeException e) {
+                System.err.println("[OtpService] Email delivery failed for " + email + " reason: " + e.getMessage());
+                System.out.println("[OtpService] Fallback OTP for " + email + " (" + purpose + "): " + otp);
+            }
+        } else {
+            System.out.println("[OtpService] Email service not enabled. Fallback OTP for " + email + " (" + purpose + "): " + otp);
+        }
         
         return otp;
     }
