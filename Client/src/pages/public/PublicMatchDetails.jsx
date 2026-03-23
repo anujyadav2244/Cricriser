@@ -1082,6 +1082,15 @@ export default function PublicMatchDetails() {
                     scorecardViews.push(view);
                   });
 
+                  const activeBattingTeamId = score?.battingTeamId;
+                  if (activeBattingTeamId) {
+                    const activeIndex = scorecardViews.findIndex((v) => v.teamId === activeBattingTeamId);
+                    if (activeIndex > 0) {
+                      const [activeView] = scorecardViews.splice(activeIndex, 1);
+                      scorecardViews.unshift(activeView);
+                    }
+                  }
+
                   return (
                     <>
                       {scorecardViews.map((view) => (
