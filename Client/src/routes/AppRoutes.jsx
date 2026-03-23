@@ -89,6 +89,7 @@ export default function AppRoutes() {
       <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
       <Route path="/admin/verify-forgot-otp" element={<AdminVerifyForgotOtp />} />
       <Route path="/admin/reset-password" element={<AdminResetPassword />} />
+      <Route path="/reset-password" element={<AdminResetPassword />} />
 
       {/* ===== TEAM OWNER AUTH ===== */}
       <Route path="/team-owner/login" element={<TeamOwnerLogin />} />
