@@ -1031,8 +1031,7 @@ export default function PublicMatchDetails() {
                 {(() => {
                   const [firstInningsTeamId, secondInningsTeamId] = getInningsOrderIds();
 
-                  const getTeamView = (id) => {
-                    const isTeam1 = id === team1Id;
+                  const getTeamView = (id, isTeam1) => {
                     const playingXIList = isTeam1 ? team1PlayingXI : team2PlayingXI;
                     const squadIds = isTeam1 ? team1SquadIds : team2SquadIds;
                     const currentStrikerId = score?.battingTeamId === id ? score?.strikerId : null;
@@ -1059,16 +1058,29 @@ export default function PublicMatchDetails() {
                     };
                   };
 
-                  const firstView = getTeamView(firstInningsTeamId);
-                  const secondView = getTeamView(secondInningsTeamId);
-                  const scorecardViews = [firstView];
+                  const team1View = getTeamView(team1Id, true);
+                  const team2View = getTeamView(team2Id, false);
 
-                  if (
-                    secondInningsTeamId
-                    && secondInningsTeamId !== firstInningsTeamId
-                  ) {
-                    scorecardViews.push(secondView);
-                  }
+                  const viewsByTeamId = new Map([
+                    [team1Id, team1View],
+                    [team2Id, team2View],
+                  ]);
+
+                  const scorecardViews = [];
+
+                  [firstInningsTeamId, secondInningsTeamId].forEach((id) => {
+                    if (!id) return;
+                    const view = viewsByTeamId.get(id);
+                    if (!view) return;
+                    if (scorecardViews.some((v) => v.teamId === view.teamId)) return;
+                    scorecardViews.push(view);
+                  });
+
+                  [team1View, team2View].forEach((view) => {
+                    if (!view?.teamId) return;
+                    if (scorecardViews.some((v) => v.teamId === view.teamId)) return;
+                    scorecardViews.push(view);
+                  });
 
                   return (
                     <>
