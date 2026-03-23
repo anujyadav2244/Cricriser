@@ -1,9 +1,9 @@
 package com.cricriser.cricriser.team;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,13 +34,13 @@ public class TeamService {
         String role = jwtUtil.extractRole(token.substring(7));
 
         if (!"TEAM_OWNER".equals(role)) {
-            throw new RuntimeException("Only Team Owner can create teams");
+            throw new IllegalArgumentException("Only Team Owner can create teams");
         }
 
         Team team = objectMapper.readValue(teamJson, Team.class);
 
         if (teamRepository.existsByNameIgnoreCase(team.getName())) {
-            throw new RuntimeException("Team name already exists");
+            throw new IllegalArgumentException("Team name already exists");
         }
 
         // ✅ FIX
@@ -49,8 +49,12 @@ public class TeamService {
         validateTeam(team);
 
         if (logoFile != null && !logoFile.isEmpty()) {
-            team.setLogoUrl(
-                    cloudinaryService.uploadFile(logoFile, "team_logos"));
+            try {
+                team.setLogoUrl(
+                        cloudinaryService.uploadFile(logoFile, "team_logos"));
+            } catch (IOException ex) {
+                throw new IllegalStateException("Logo upload failed. Please try again later or create team without logo.");
+            }
         }
 
         Team saved = teamRepository.save(team);
@@ -72,14 +76,14 @@ public class TeamService {
         String role = jwtUtil.extractRole(jwt);
 
         if (!"TEAM_OWNER".equals(role)) {
-            throw new RuntimeException("Access denied");
+            throw new IllegalArgumentException("Access denied");
         }
 
         Team existing = teamRepository.findById(teamId)
-                .orElseThrow(() -> new RuntimeException("Team not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Team not found"));
 
         if (!existing.getOwnerId().equals(userId)) {
-            throw new RuntimeException("Unauthorized");
+            throw new IllegalArgumentException("Unauthorized");
         }
 
         // 🔹 Store OLD squad before update (important)
@@ -107,12 +111,16 @@ public class TeamService {
 
         // 🔹 Logo update
         if (logoFile != null && !logoFile.isEmpty()) {
-            if (existing.getLogoUrl() != null) {
-                cloudinaryService.deleteFile(existing.getLogoUrl());
+            try {
+                if (existing.getLogoUrl() != null) {
+                    cloudinaryService.deleteFile(existing.getLogoUrl());
+                }
+                existing.setLogoUrl(
+                        cloudinaryService.uploadFile(logoFile, "team_logos")
+                );
+            } catch (IOException ex) {
+                throw new IllegalStateException("Logo upload failed. Please try again later.");
             }
-            existing.setLogoUrl(
-                    cloudinaryService.uploadFile(logoFile, "team_logos")
-            );
         }
 
         // ✅ Validate FINAL state
@@ -138,12 +146,12 @@ public class TeamService {
         // Players newly added or retained
         for (String pid : newSquad) {
             var player = playerRepository.findById(pid)
-                    .orElseThrow(() -> new RuntimeException("Invalid player ID"));
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid player ID"));
 
             // ❌ Prevent player being in another team
             if (player.getCurrentTeamId() != null
                     && !player.getCurrentTeamId().equals(savedTeam.getId())) {
-                throw new RuntimeException(
+                throw new IllegalArgumentException(
                         "Player " + player.getName() + " already belongs to another team"
                 );
             }
@@ -161,10 +169,10 @@ public class TeamService {
         String ownerEmail = validateToken(token);
 
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new RuntimeException("Team not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Team not found"));
 
         if (!team.getOwnerId().equals(ownerEmail)) {
-            throw new RuntimeException("Unauthorized");
+            throw new IllegalArgumentException("Unauthorized");
         }
 
         if (team.getLogoUrl() != null) {
@@ -183,41 +191,41 @@ public class TeamService {
         if (team.getSquadPlayerIds() == null
                 || team.getSquadPlayerIds().size() < 15
                 || team.getSquadPlayerIds().size() > 18) {
-            throw new RuntimeException("Squad must have 15–18 players");
+            throw new IllegalArgumentException("Squad must have 15–18 players");
         }
 
         if (team.getCoach() == null || team.getCoach().isBlank()) {
-            throw new RuntimeException("Coach is required");
+            throw new IllegalArgumentException("Coach is required");
         }
 
         if (team.getCaptainId() == null || team.getCaptainId().isBlank()) {
-            throw new RuntimeException("Captain is required");
+            throw new IllegalArgumentException("Captain is required");
         }
 
         if (team.getViceCaptainId() == null || team.getViceCaptainId().isBlank()) {
-            throw new RuntimeException("Vice Captain is required");
+            throw new IllegalArgumentException("Vice Captain is required");
         }
 
         if (team.getCaptainId().equals(team.getViceCaptainId())) {
-            throw new RuntimeException("Captain & Vice Captain cannot be same");
+            throw new IllegalArgumentException("Captain & Vice Captain cannot be same");
         }
 
         if (!team.getSquadPlayerIds().contains(team.getCaptainId())
                 || !team.getSquadPlayerIds().contains(team.getViceCaptainId())) {
-            throw new RuntimeException("Captain & Vice Captain must be in squad");
+            throw new IllegalArgumentException("Captain & Vice Captain must be in squad");
         }
 
         // Validate players exist
         for (String pid : team.getSquadPlayerIds()) {
             playerRepository.findById(pid)
-                    .orElseThrow(() -> new RuntimeException("Invalid player ID"));
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid player ID"));
         }
     }
 
     // ================= GET =================
     public Team getTeamById(String id) {
         return teamRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Team not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Team not found"));
     }
 
     public List<Team> getTeamsByOwnerId(@PathVariable String ownerId) {
@@ -232,13 +240,13 @@ public class TeamService {
     private String validateToken(String token) throws Exception {
 
         if (token == null || !token.startsWith("Bearer ")) {
-            throw new RuntimeException("Missing token");
+            throw new IllegalArgumentException("Missing token");
         }
 
         String jwt = token.substring(7);
 
         if (blacklistService.isBlacklisted(jwt)) {
-            throw new RuntimeException("Session expired");
+            throw new IllegalArgumentException("Session expired");
         }
 
         return jwtUtil.extractEmail(jwt);
@@ -248,12 +256,12 @@ public class TeamService {
 
         for (String pid : playerIds) {
             var player = playerRepository.findById(pid)
-                    .orElseThrow(() -> new RuntimeException("Invalid player ID"));
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid player ID"));
 
             // ❌ Player already in another team
             if (player.getCurrentTeamId() != null
                     && !player.getCurrentTeamId().equals(teamId)) {
-                throw new RuntimeException(
+                throw new IllegalArgumentException(
                         "Player " + player.getName() + " already belongs to another team"
                 );
             }
