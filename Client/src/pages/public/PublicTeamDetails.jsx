@@ -19,8 +19,53 @@ export default function PublicTeamDetails() {
       try {
         setLoading(true);
         setError("");
-        const res = await api.get(`/api/teams/${teamId}/details`);
-        setTeam(res?.data || null);
+        const detailsRes = await api.get(`/api/teams/${teamId}/details`).catch(() => null);
+        const rawRes = await api.get(`/api/teams/${teamId}`).catch(() => null);
+
+        const rawTeam = rawRes?.data || null;
+        let nextTeam = detailsRes?.data || null;
+
+        if (!nextTeam && rawTeam) {
+          nextTeam = {
+            id: rawTeam.id || teamId,
+            name: rawTeam.name || "Unnamed Team",
+            coach: rawTeam.coach || "",
+            logoUrl: rawTeam.logoUrl || null,
+            players: [],
+          };
+        }
+
+        const hasDetailedPlayers = Array.isArray(nextTeam?.players) && nextTeam.players.length > 0;
+        const squadPlayerIds = Array.isArray(rawTeam?.squadPlayerIds) ? rawTeam.squadPlayerIds : [];
+
+        if (!hasDetailedPlayers && squadPlayerIds.length > 0) {
+          const playerEntries = await Promise.all(
+            squadPlayerIds.map(async (playerId) => {
+              try {
+                const playerRes = await api.get(`/api/players/${playerId}`);
+                const player = playerRes?.data;
+                if (!player) return null;
+                return {
+                  ...player,
+                  id: player.id || playerId,
+                };
+              } catch {
+                return null;
+              }
+            })
+          );
+
+          nextTeam = {
+            ...(nextTeam || {}),
+            id: nextTeam?.id || rawTeam?.id || teamId,
+            name: nextTeam?.name || rawTeam?.name || "Unnamed Team",
+            coach: nextTeam?.coach || rawTeam?.coach || "",
+            logoUrl: nextTeam?.logoUrl || rawTeam?.logoUrl || null,
+            players: playerEntries.filter(Boolean),
+          };
+        }
+
+        setTeam(nextTeam);
       } catch (err) {
         setTeam(null);
         setError(err?.response?.data?.message || "Failed to load team details");
