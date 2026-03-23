@@ -12,6 +12,59 @@ export default function PublicBrowseTeams() {
   const [loading, setLoading] = useState(true);
   const [searchLoading, setSearchLoading] = useState(false);
 
+  const normalizeTeams = (payload) => {
+    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload?.content)) return payload.content;
+    if (Array.isArray(payload?.data)) return payload.data;
+    return [];
+  };
+
+  const normalizeAndSort = (items) =>
+    [...items]
+      .filter((team) => team?.id || team?._id || team?.name)
+      .sort((a, b) => (a?.name || "").localeCompare(b?.name || ""));
+
+  const loadTeamsFromPublicMatches = async () => {
+    const [liveRes, upcomingRes, completedRes] = await Promise.all([
+      api.get("/api/matches/public/LIVE").catch(() => null),
+      api.get("/api/matches/public/UPCOMING").catch(() => null),
+      api.get("/api/matches/public/COMPLETED").catch(() => null),
+    ]);
+
+    const matches = [
+      ...(Array.isArray(liveRes?.data) ? liveRes.data : []),
+      ...(Array.isArray(upcomingRes?.data) ? upcomingRes.data : []),
+      ...(Array.isArray(completedRes?.data) ? completedRes.data : []),
+    ];
+
+    const teamIds = [...new Set(
+      matches
+        .flatMap((m) => [m?.teamAId, m?.teamBId, m?.team1Id, m?.team2Id, m?.teamA?.id, m?.teamB?.id, m?.team1?.id, m?.team2?.id])
+        .filter(Boolean)
+    )];
+
+    if (teamIds.length === 0) return [];
+
+    const details = await Promise.all(
+      teamIds.map(async (id) => {
+        try {
+          const res = await api.get(`/api/teams/${id}/details`);
+          const t = res?.data;
+          if (!t) return null;
+          return {
+            id: t.id || id,
+            name: t.name || "Unnamed Team",
+            logoUrl: t.logoUrl || null,
+          };
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    return details.filter(Boolean);
+  };
+
   useEffect(() => {
     loadTeams();
   }, []);
@@ -40,12 +93,23 @@ export default function PublicBrowseTeams() {
   const loadTeams = async () => {
     try {
       const res = await api.get("/api/teams");
-      const items = Array.isArray(res?.data) ? res.data : [];
-      items.sort((a, b) => (a?.name || "").localeCompare(b?.name || ""));
-      setTeams(items);
+      const items = normalizeAndSort(normalizeTeams(res?.data));
+
+      if (items.length > 0) {
+        setTeams(items);
+        return;
+      }
+
+      const fallbackItems = normalizeAndSort(await loadTeamsFromPublicMatches());
+      setTeams(fallbackItems);
     } catch (err) {
       console.error("Failed to load teams", err);
-      setTeams([]);
+      try {
+        const fallbackItems = normalizeAndSort(await loadTeamsFromPublicMatches());
+        setTeams(fallbackItems);
+      } catch {
+        setTeams([]);
+      }
     } finally {
       setLoading(false);
     }

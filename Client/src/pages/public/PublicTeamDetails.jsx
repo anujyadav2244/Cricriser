@@ -61,7 +61,11 @@ export default function PublicTeamDetails() {
     );
   }
 
-  const squad = Array.isArray(team?.squad) ? team.squad : [];
+  const squad = Array.isArray(team?.players)
+    ? team.players
+    : Array.isArray(team?.squad)
+      ? team.squad
+      : [];
 
   return (
     <div className="min-h-screen bg-slate-100">

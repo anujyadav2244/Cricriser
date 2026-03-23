@@ -145,8 +145,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 || path.startsWith("/api/match-player-stats/match/")
                 || path.startsWith("/api/match-player-stats/player")
                 || path.startsWith("/api/player-stats/")
+                || path.equals("/api/players")
                 || path.startsWith("/api/players/")
                 || path.startsWith("/api/leagues/")
+                || path.equals("/api/teams")
                 || path.startsWith("/api/teams/")
                 || path.startsWith("/api/points/");
     }
