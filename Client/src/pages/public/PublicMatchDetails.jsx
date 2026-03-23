@@ -1067,8 +1067,13 @@ export default function PublicMatchDetails() {
                   ]);
 
                   const scorecardViews = [];
+                  const battingTeamId = score?.battingTeamId;
 
-                  [firstInningsTeamId, secondInningsTeamId].forEach((id) => {
+                  const preferredOrderIds = battingTeamId
+                    ? [battingTeamId, battingTeamId === team1Id ? team2Id : team1Id]
+                    : [firstInningsTeamId, secondInningsTeamId];
+
+                  preferredOrderIds.forEach((id) => {
                     if (!id) return;
                     const view = viewsByTeamId.get(id);
                     if (!view) return;
@@ -1081,15 +1086,6 @@ export default function PublicMatchDetails() {
                     if (scorecardViews.some((v) => v.teamId === view.teamId)) return;
                     scorecardViews.push(view);
                   });
-
-                  const activeBattingTeamId = score?.battingTeamId;
-                  if (activeBattingTeamId) {
-                    const activeIndex = scorecardViews.findIndex((v) => v.teamId === activeBattingTeamId);
-                    if (activeIndex > 0) {
-                      const [activeView] = scorecardViews.splice(activeIndex, 1);
-                      scorecardViews.unshift(activeView);
-                    }
-                  }
 
                   return (
                     <>
