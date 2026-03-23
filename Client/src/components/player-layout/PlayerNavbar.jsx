@@ -28,7 +28,7 @@ export default function PlayerNavbar({ onMenuClick, player, open }) {
           onClick={onMenuClick}
           aria-label={open ? "Close sidebar" : "Open sidebar"}
           aria-expanded={open}
-          className="text-slate-300 hover:bg-slate-800 md:hidden"
+          className="text-slate-300 hover:bg-slate-800"
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
