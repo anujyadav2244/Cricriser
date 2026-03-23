@@ -1061,12 +1061,22 @@ export default function PublicMatchDetails() {
 
                   const firstView = getTeamView(firstInningsTeamId);
                   const secondView = getTeamView(secondInningsTeamId);
-                  const activeBattingTeamId = score?.battingTeamId || firstInningsTeamId;
-                  const activeView = activeBattingTeamId === secondInningsTeamId ? secondView : firstView;
+                  const scorecardViews = [firstView];
+
+                  if (
+                    secondInningsTeamId
+                    && secondInningsTeamId !== firstInningsTeamId
+                  ) {
+                    scorecardViews.push(secondView);
+                  }
 
                   return (
                     <>
-                      {renderTeamScorecard(activeView)}
+                      {scorecardViews.map((view) => (
+                        <div key={`scorecard-${view.teamId || view.teamName}`}>
+                          {renderTeamScorecard(view)}
+                        </div>
+                      ))}
                     </>
                   );
                 })()}
