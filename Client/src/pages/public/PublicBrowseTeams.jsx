@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import api from "@/api/axios";
 import PublicHeader from "@/components/public/PublicHeader";
 
 export default function PublicBrowseTeams() {
+  const navigate = useNavigate();
   const [teams, setTeams] = useState([]);
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -81,14 +83,21 @@ export default function PublicBrowseTeams() {
         {!loading && !searchLoading && visibleTeams.length > 0 && (
           <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {visibleTeams.map((team) => (
-              <Card key={team.id || team._id || team.name} className="border border-slate-300">
+              <Card
+                key={team.id || team._id || team.name}
+                className="border border-slate-300 cursor-pointer hover:shadow-md transition"
+                onClick={() => navigate(`/browse/teams/${team.id || team._id}`)}
+              >
                 <CardContent className="p-4 flex items-center gap-3">
                   {team.logoUrl ? (
                     <img src={team.logoUrl} alt={team.name || "Team"} className="h-10 w-10 rounded-full object-cover" />
                   ) : (
                     <div className="h-10 w-10 rounded-full bg-slate-200" />
                   )}
-                  <p className="font-semibold text-slate-900">{team.name || "Unnamed Team"}</p>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-slate-900 truncate">{team.name || "Unnamed Team"}</p>
+                    <p className="text-xs text-slate-500">View team details</p>
+                  </div>
                 </CardContent>
               </Card>
             ))}

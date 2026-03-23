@@ -9,6 +9,7 @@ import PublicMatchArchives from "@/pages/public/PublicMatchArchives";
 import PublicMatchSchedule from "@/pages/public/PublicMatchSchedule";
 import PublicBrowseTeams from "@/pages/public/PublicBrowseTeams";
 import PublicBrowsePlayers from "@/pages/public/PublicBrowsePlayers";
+import PublicTeamDetails from "@/pages/public/PublicTeamDetails";
 import LoginSelector from "@/pages/auth/LoginSelector";
 
 /* ================= ADMIN ================= */
@@ -75,6 +76,7 @@ export default function AppRoutes() {
       <Route path="/matches/schedule" element={<PublicMatchSchedule />} />
       <Route path="/matches/archive" element={<PublicMatchArchives />} />
       <Route path="/browse/teams" element={<PublicBrowseTeams />} />
+      <Route path="/browse/teams/:teamId" element={<PublicTeamDetails />} />
       <Route path="/browse/players" element={<PublicBrowsePlayers />} />
       <Route path="/points/:leagueId" element={<PublicPointsTable />} />
       <Route path="/players/:playerId" element={<PublicPlayerProfile />} />
