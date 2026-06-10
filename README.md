@@ -41,6 +41,22 @@ Frontend runs on `http://localhost:5173` by default.
   - Build: `./mvnw clean package -DskipTests`
   - Start: `java -jar target/cricriser-0.0.1-SNAPSHOT.jar`
 
+### Backend (Docker)
+1. The backend container is defined in [Server/Dockerfile](Server/Dockerfile).
+2. Build locally from the repo root:
+
+```bash
+docker build -t cricriser-backend ./Server
+```
+
+3. Run the container locally:
+
+```bash
+docker run --rm -p 8080:8080 --env-file Server/.env.example cricriser-backend
+```
+
+4. For Render Docker deployment, point the service root to `Server` and use the Dockerfile in that directory.
+
 ### Frontend (Vercel)
 1. Deploy the `Client` folder.
 2. Set `VITE_API_BASE_URL` to your Render backend URL, for example:
