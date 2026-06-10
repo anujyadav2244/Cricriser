@@ -31,19 +31,19 @@ Frontend runs on `http://localhost:5173` by default.
 
 ## Deployment
 
-### Backend (Railway)
-1. Deploy `Server` folder as a Java service.
-2. Set environment variables from [Server/.env.example](Server/.env.example).
-3. Set `APP_ALLOWED_ORIGINS` to:
-   `https://cricriser.vercel.app,https://*.vercel.app,http://localhost:5173`
-4. Build/start can use defaults from Railway Java detection:
-   - Build: `./mvnw clean package -DskipTests`
-   - Start: `java -jar target/*.jar`
+### Backend (Render)
+1. Deploy the repository using [render.yaml](render.yaml) or create a Web Service with `Server` as the root directory.
+2. Set the environment variables from [Server/.env.example](Server/.env.example).
+3. Set `APP_ALLOWED_ORIGINS` to your Vercel frontend URL, for example:
+  `https://cricriser.vercel.app,https://*.vercel.app,http://localhost:5173`
+4. Render build/start settings:
+  - Build: `./mvnw clean package -DskipTests`
+  - Start: `java -jar target/cricriser-0.0.1-SNAPSHOT.jar`
 
 ### Frontend (Vercel)
-1. Deploy `Client` folder.
-2. Set `VITE_API_BASE_URL` to:
-   `https://cricriser.up.railway.app`
+1. Deploy the `Client` folder.
+2. Set `VITE_API_BASE_URL` to your Render backend URL, for example:
+  `https://<your-render-service>.onrender.com`
 3. SPA routes are handled by [Client/vercel.json](Client/vercel.json), so direct refresh on routes works.
 
 ### Environment Variables

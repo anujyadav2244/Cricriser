@@ -1,7 +1,0 @@
-target/
-*.log
-*.md
-.git
-.gitignore
-node_modules/
-Client/

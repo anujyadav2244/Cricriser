@@ -1,6 +1,8 @@
 services:
   - type: web
     name: cricriser-backend
-    env: docker
-    dockerfilePath: Server/Dockerfile
-    autoDeploy: true
+    runtime: java
+    rootDir: Server
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/*.jar
+    plan: free
