@@ -18,6 +18,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 public class CorsConfig {
 
+    private static final List<String> SAFE_DEFAULT_ORIGINS = List.of(
+            "http://localhost:5173",
+            "https://cricriser.vercel.app",
+            "https://*.vercel.app"
+    );
+
     @Value("${app.allowed.origins:http://localhost:5173,https://cricriser.vercel.app,https://*.vercel.app}")
     private String allowedOrigins;
 
@@ -26,17 +32,25 @@ public class CorsConfig {
         List<String> configuredOrigins = Arrays.stream(allowedOrigins.split(","))
                 .map(String::trim)
                 .filter(origin -> !origin.isBlank())
+                .map(origin -> origin.replace("\"", "").replace("'", ""))
                 .map(origin -> origin.endsWith("/") ? origin.substring(0, origin.length() - 1) : origin)
                 .collect(Collectors.toList());
+
+        List<String> mergedOrigins = new ArrayList<>(SAFE_DEFAULT_ORIGINS);
+        mergedOrigins.addAll(configuredOrigins);
 
         List<String> exactOrigins = new ArrayList<>();
         List<String> wildcardOriginPatterns = new ArrayList<>();
 
-        for (String origin : configuredOrigins) {
+        for (String origin : mergedOrigins) {
             if (origin.contains("*")) {
-                wildcardOriginPatterns.add(origin);
+                if (!wildcardOriginPatterns.contains(origin)) {
+                    wildcardOriginPatterns.add(origin);
+                }
             } else {
-                exactOrigins.add(origin);
+                if (!exactOrigins.contains(origin)) {
+                    exactOrigins.add(origin);
+                }
             }
         }
 
