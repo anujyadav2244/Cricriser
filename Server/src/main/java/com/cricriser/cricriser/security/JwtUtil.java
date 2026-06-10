@@ -2,6 +2,7 @@ package com.cricriser.cricriser.security;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.security.MessageDigest;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -27,9 +28,20 @@ public class JwtUtil {
 
     private Key getKey() {
         if (this.key == null) {
-            this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+            this.key = Keys.hmacShaKeyFor(deriveKeyBytes(secret));
         }
         return this.key;
+    }
+
+    private byte[] deriveKeyBytes(String rawSecret) {
+        String normalizedSecret = rawSecret == null ? "" : rawSecret.trim();
+
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            return digest.digest(normalizedSecret.getBytes(StandardCharsets.UTF_8));
+        } catch (Exception ex) {
+            throw new IllegalStateException("Unable to derive JWT signing key", ex);
+        }
     }
 
     // ✅ UPDATED
