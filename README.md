@@ -33,10 +33,11 @@ Frontend runs on `http://localhost:5173` by default.
 
 ### Backend (Render)
 1. Deploy the repository using [render.yaml](render.yaml) or create a Web Service with `Server` as the root directory.
-2. Set the environment variables from [Server/.env.example](Server/.env.example).
-3. Set `APP_ALLOWED_ORIGINS` to your Vercel frontend URL, for example:
+2. Use `Server` exactly with a capital `S`; Render is case-sensitive on Linux, so `server` will fail.
+3. Set the environment variables from [Server/.env.example](Server/.env.example).
+4. Set `APP_ALLOWED_ORIGINS` to your Vercel frontend URL, for example:
   `https://cricriser.vercel.app,https://*.vercel.app,http://localhost:5173`
-4. Render build/start settings:
+5. Render build/start settings:
   - Build: `./mvnw clean package -DskipTests`
   - Start: `java -jar target/cricriser-0.0.1-SNAPSHOT.jar`
 
