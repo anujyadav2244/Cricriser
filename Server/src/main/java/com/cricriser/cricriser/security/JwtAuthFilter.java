@@ -34,7 +34,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         // Allow preflight
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            response.setStatus(HttpServletResponse.SC_OK);
+            filterChain.doFilter(request, response);
             return;
         }
 
