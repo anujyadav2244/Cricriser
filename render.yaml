@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: cricriser-backend
+    env: docker
+    dockerfilePath: Server/Dockerfile
+    autoDeploy: true
