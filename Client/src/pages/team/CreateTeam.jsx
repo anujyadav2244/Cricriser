@@ -139,7 +139,11 @@ export default function CreateTeam() {
       toast.success("Team created successfully 🏏");
       navigate("/team-owner/dashboard");
     } catch (e) {
-      toast.error(e.response?.data?.error || "Creation failed");
+      toast.error(
+        e.response?.data?.message
+        || e.response?.data?.error
+        || "Creation failed"
+      );
     } finally {
       setLoading(false);
     }

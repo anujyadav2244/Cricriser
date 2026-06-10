@@ -249,7 +249,7 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileMenuOpen((open) => !open)}
-              className="md:hidden h-10 w-10 rounded-md border border-teal-200/70 text-white text-2xl leading-none"
+              className="h-10 w-10 rounded-md border border-teal-200/70 text-white text-2xl leading-none"
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileMenuOpen}
             >
@@ -259,7 +259,7 @@ export default function Home() {
               Cricriser
             </h1>
           </div>
-          <div className="hidden md:flex items-center gap-6 text-sm font-semibold">
+          <div className="hidden lg:flex items-center gap-6 text-sm font-semibold">
             <button onClick={() => navigate("/")}>Live Scores</button>
             <button onClick={() => navigate("/matches/schedule")}>Schedule</button>
             <button onClick={() => navigate("/matches/archive")}>Archives</button>
@@ -267,7 +267,7 @@ export default function Home() {
               Login
             </button>
           </div>
-          <div className="flex md:hidden items-center">
+          <div className="flex lg:hidden items-center">
             <button
               onClick={() => navigate("/login")}
               className="bg-white text-teal-700 px-3 py-1.5 rounded-full text-sm font-semibold"
@@ -279,13 +279,13 @@ export default function Home() {
       </header>
 
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div className="fixed inset-0 z-50">
           <button
             className="absolute inset-0 bg-black/35"
             onClick={() => setMobileMenuOpen(false)}
             aria-label="Close menu backdrop"
           />
-          <aside className="relative h-full w-[86%] max-w-sm bg-white shadow-2xl overflow-y-auto">
+          <aside className="relative h-full w-[86%] max-w-sm lg:w-[360px] bg-white shadow-2xl overflow-y-auto">
             <div className="bg-teal-700 text-white px-4 py-3 flex items-center justify-between">
               <h2 className="text-lg font-bold tracking-wide">Menu</h2>
               <button
