@@ -1,0 +1,7 @@
+.git
+.idea
+Client
+**/node_modules
+**/target
+*.log
+.DS_Store

@@ -17,35 +17,38 @@ import com.cricriser.cricriser.player.playerstats.PlayerStatsService;
 @Service
 public class BallByBallService {
 
-    @Autowired
-    private BallByBallRepository ballRepo;
+    private final BallByBallRepository ballRepo;
 
-    @Autowired
-    private BallService ballService;
+    private final BallService ballService;
 
-    @Autowired
-    private WicketHandlingService wicketService;
+    private final WicketHandlingService wicketService;
 
-    @Autowired
-    private PlayerValidationService playerValidationService;
+    private final PlayerValidationService playerValidationService;
 
-    @Autowired
-    private StrikeRotationService strikeService;
+    private final StrikeRotationService strikeService;
 
-    @Autowired
-    private MatchScoreRepository matchScoreRepository;
+    private final MatchScoreRepository matchScoreRepository;
 
-    @Autowired
-    private MatchScoreUpdateService matchScoreUpdateService;
+    private final MatchScoreUpdateService matchScoreUpdateService;
 
-    @Autowired
-    private MatchPlayerStatsService matchPlayerStatsService;
+    private final MatchPlayerStatsService matchPlayerStatsService;
 
-    @Autowired
-    private PlayerStatsService playerStatsService;
+    private final PlayerStatsService playerStatsService;
 
     @Autowired
     private BattingStateService battingStateService;
+
+    BallByBallService(BallByBallRepository ballRepo, BallService ballService, MatchPlayerStatsService matchPlayerStatsService, MatchScoreUpdateService matchScoreUpdateService, StrikeRotationService strikeService, MatchScoreRepository matchScoreRepository, PlayerValidationService playerValidationService, PlayerStatsService playerStatsService, WicketHandlingService wicketService) {
+        this.ballRepo = ballRepo;
+        this.ballService = ballService;
+        this.matchPlayerStatsService = matchPlayerStatsService;
+        this.matchScoreUpdateService = matchScoreUpdateService;
+        this.strikeService = strikeService;
+        this.matchScoreRepository = matchScoreRepository;
+        this.playerValidationService = playerValidationService;
+        this.playerStatsService = playerStatsService;
+        this.wicketService = wicketService;
+    }
 
     // ================= RECORD A BALL =================
     @Transactional

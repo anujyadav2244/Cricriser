@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: cricriser-backend
+    runtime: java
+    rootDir: Server
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/*.jar
+    plan: free
