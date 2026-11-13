@@ -1,18 +1,43 @@
-const TOKEN_KEY = "token";
+const TOKENS_KEY = "authTokens";
 const ROLE_KEY = "role";
 
+const readTokens = () => {
+  try {
+    return JSON.parse(sessionStorage.getItem(TOKENS_KEY) || "{}");
+  } catch {
+    return {};
+  }
+};
+
+const roleFromPath = () => {
+  const path = window.location.pathname;
+  if (path.startsWith("/admin")) return "ADMIN";
+  if (path.startsWith("/team-owner")) return "TEAM_OWNER";
+  if (path.startsWith("/player")) return "PLAYER";
+  return sessionStorage.getItem(ROLE_KEY);
+};
+
 export const authStorage = {
-  getToken: () => sessionStorage.getItem(TOKEN_KEY),
+  getToken: (role = roleFromPath()) => {
+    if (!role) return null;
+    return readTokens()[role] || null;
+  },
 
   setAuth: (token, role) => {
-    sessionStorage.setItem(TOKEN_KEY, token);
+    const tokens = readTokens();
+    tokens[role] = token;
+    sessionStorage.setItem(TOKENS_KEY, JSON.stringify(tokens));
+    sessionStorage.setItem("token", token);
     if (role) {
       sessionStorage.setItem(ROLE_KEY, role);
     }
   },
 
-  clear: () => {
-    sessionStorage.removeItem(TOKEN_KEY);
+  clear: (role = roleFromPath()) => {
+    const tokens = readTokens();
+    if (role) delete tokens[role];
+    sessionStorage.setItem(TOKENS_KEY, JSON.stringify(tokens));
+    sessionStorage.removeItem("token");
     sessionStorage.removeItem(ROLE_KEY);
   },
 };
