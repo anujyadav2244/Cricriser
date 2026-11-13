@@ -42,7 +42,7 @@ export default function BallInputPanel({
   const [extrasRuns, setExtrasRuns] = useState(0);
 
   const [loading, setLoading] = useState(false);
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   /* ================= OVER LOGIC ================= */
 

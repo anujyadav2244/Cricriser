@@ -4,6 +4,7 @@ import api from "@/api/axios";
 import { toast } from "sonner";
 import PlayerNavbar from "@/components/player-layout/PlayerNavbar";
 import PlayerSidebar from "@/components/player-layout/PlayerSidebar";
+import { authStorage } from "@/lib/authStorage";
 
 export default function PlayerLayout() {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export default function PlayerLayout() {
         const status = err.response?.status;
 
         if (status === 401 || status === 403) {
-          localStorage.clear();
+          authStorage.clear();
           toast.error("Session expired. Please login again.");
           navigate("/login");
           return;

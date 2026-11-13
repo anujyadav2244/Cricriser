@@ -156,7 +156,7 @@ export default function UpdateTeam() {
       fd.append("team", JSON.stringify(form));
       if (logoFile) fd.append("logo", logoFile);
 
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       await axios.put(`/api/teams/${id}`, fd, {
         headers: {

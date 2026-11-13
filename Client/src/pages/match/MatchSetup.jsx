@@ -24,7 +24,7 @@ export default function MatchSetup() {
 
   const loadMatch = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       console.log("Using token:", token);
       const res = await api.get(`/api/match/${matchId}`, {
         headers: {

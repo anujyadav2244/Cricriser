@@ -4,7 +4,7 @@ import BASE_URL from "@/api/config";
 
 export default function BattingStats({ matchScore, matchDetails }) {
     const [batting, setBatting] = useState(null);
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     /* ================= PLAYER NAME FIX ================= */
     const findPlayerName = (playerId) => {

@@ -9,12 +9,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
+import { authStorage } from "@/lib/authStorage";
 
 export default function PlayerNavbar({ onMenuClick, player, open }) {
   const navigate = useNavigate();
 
   const logout = () => {
-    localStorage.clear();
+    authStorage.clear();
     navigate("/login");
   };
 

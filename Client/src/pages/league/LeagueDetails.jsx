@@ -19,7 +19,7 @@ export default function LeagueDetails() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
 
         /* ================= FETCH LEAGUE ================= */
         const leagueRes = await fetch(

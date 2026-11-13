@@ -172,7 +172,7 @@ export default function CreateLeague() {
       const res = await fetch(`${BASE_URL}/api/leagues/create`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
         },
         body: fd,
       });

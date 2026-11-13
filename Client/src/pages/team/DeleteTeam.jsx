@@ -4,13 +4,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import axios from "@/api/axios";
+import { authStorage } from "@/lib/authStorage";
 
 export default function DeleteTeam() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const handleDelete = async () => {
-    const token = localStorage.getItem("token");
+    const token = authStorage.getToken();
 
     if (!token) {
       toast.error("Unauthorized");

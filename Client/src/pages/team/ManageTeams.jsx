@@ -34,7 +34,7 @@ export default function TeamOwnerManageTeams() {
     if (!confirm("Are you sure you want to delete this team?")) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       await axios.delete(`/api/teams/${id}`, {
         headers: {

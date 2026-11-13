@@ -34,9 +34,6 @@ export function LoginForm({ role }) {
       const { data } = await api.login({ email, password });
 
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.role);
-
       setAuth(data.token, {
         email: data.email,
         role: data.role,

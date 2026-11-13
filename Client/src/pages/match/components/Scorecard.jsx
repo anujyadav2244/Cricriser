@@ -90,7 +90,7 @@ export default function Scorecard({
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const res = await fetch(
         `${BASE_URL}/api/match-player-stats/match/${matchId}`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -112,7 +112,7 @@ export default function Scorecard({
 
   const fetchCommentary = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const res = await fetch(
         `${BASE_URL}/api/ball-by-ball/match/${matchId}`,
         { headers: { Authorization: `Bearer ${token}` } }

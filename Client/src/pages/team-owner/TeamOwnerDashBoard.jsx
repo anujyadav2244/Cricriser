@@ -5,6 +5,7 @@ import BASE_URL from "@/api/config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { authStorage } from "@/lib/authStorage";
 
 export default function TeamOwnerDashboard() {
   const [teams, setTeams] = useState([]);
@@ -13,7 +14,7 @@ export default function TeamOwnerDashboard() {
 
   useEffect(() => {
     const loadTeams = async () => {
-      const token = localStorage.getItem("token");
+      const token = authStorage.getToken();
 
       if (!token) {
         toast.error("Unauthorized");

@@ -52,7 +52,7 @@ export default function StartInningsForm({
 
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const res = await fetch(
         `${BASE_URL}/api/match/score/start-innings`,

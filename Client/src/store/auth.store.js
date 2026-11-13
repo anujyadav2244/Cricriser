@@ -1,12 +1,13 @@
 import { create } from "zustand";
+import { authStorage } from "@/lib/authStorage";
 
 export const useAuthStore = create((set) => ({
-  token: localStorage.getItem("token"),
+  token: authStorage.getToken(),
   user: null,
-  isAuthenticated: !!localStorage.getItem("token"),
+  isAuthenticated: !!authStorage.getToken(),
 
   setAuth: (token, user) => {
-    localStorage.setItem("token", token);
+    authStorage.setAuth(token, user?.role);
     set({
       token,
       user,
@@ -15,7 +16,7 @@ export const useAuthStore = create((set) => ({
   },
 
   logout: () => {
-    localStorage.removeItem("token");
+    authStorage.clear();
     set({
       token: null,
       user: null,

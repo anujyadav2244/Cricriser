@@ -60,9 +60,10 @@ import TeamOwnerDashboard from "@/pages/team-owner/TeamOwnerDashBoard";
 import TeamOwnerLayout from "@/components/team-owner-layout/TeamOwnerLayout";
 import TeamOwnerResetPassword from "@/pages/auth/team-owner/TeamOwnerResetPassword";
 import TeamOwnerDeleteAccount from "@/pages/auth/team-owner/TeamOwnerDeleteAccount";
+import { authStorage } from "@/lib/authStorage";
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
+  const token = authStorage.getToken();
   return token ? children : <Navigate to="/login" replace />;
 };
 

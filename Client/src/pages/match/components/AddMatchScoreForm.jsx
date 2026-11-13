@@ -51,7 +51,7 @@ export default function AddMatchScoreForm({
 
   const handleSubmit = async () => {
 
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if(!token) {
         console.log("Token Missing");
         return;

@@ -24,7 +24,7 @@ export default function MatchScoreboard() {
   }, [matchDetails, score]);
   const fetchAll = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       // ===== MATCH DETAILS =====
       const matchRes = await fetch(
@@ -54,7 +54,7 @@ export default function MatchScoreboard() {
 
   const refreshScore = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const res = await fetch(
         `${BASE_URL}/api/match/score/${matchId}`,
         { headers: { Authorization: `Bearer ${token}` } }
