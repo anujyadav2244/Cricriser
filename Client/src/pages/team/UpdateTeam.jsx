@@ -37,21 +37,21 @@ export default function UpdateTeam() {
 
   /* ================= LOAD TEAM ================= */
   useEffect(() => {
-    teamApi
-      .getDetails(id)
-      .then((res) => {
-        const t = res.data;
+    Promise.all([teamApi.getById(id), teamApi.getDetails(id)])
+      .then(([teamRes, detailsRes]) => {
+        const team = teamRes.data;
+        const details = detailsRes.data;
 
         setForm({
-          name: t.name || "",
-          coach: t.coach || "",
-          captainId: t.captainId || "",
-          viceCaptainId: t.viceCaptainId || "",
-          squadPlayerIds: t.players ? t.players.map((p) => p.id) : [],
+          name: team.name || "",
+          coach: team.coach || "",
+          captainId: team.captainId || "",
+          viceCaptainId: team.viceCaptainId || "",
+          squadPlayerIds: team.squadPlayerIds || [],
         });
 
-        setSelectedPlayers(t.players || []);
-        setLogoPreview(t.logoUrl || "");
+        setSelectedPlayers(details.players || []);
+        setLogoPreview(team.logoUrl || "");
       })
       .catch(() => toast.error("Failed to load team"));
   }, [id]);
@@ -141,8 +141,6 @@ export default function UpdateTeam() {
 
     return null;
   };
-
-  const isFormValid = () => validate() === null;
 
   /* ================= SUBMIT ================= */
   const handleUpdate = async () => {
@@ -293,7 +291,7 @@ export default function UpdateTeam() {
 
           <Button
             onClick={handleUpdate}
-            disabled={loading || !isFormValid()}
+            disabled={loading}
           >
             {loading ? "Updating..." : "Update Team"}
           </Button>
