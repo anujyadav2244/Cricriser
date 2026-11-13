@@ -4,7 +4,7 @@ const ACTIVE_TOKEN_KEY = "token";
 
 const readTokens = () => {
   try {
-    return JSON.parse(localStorage.getItem(TOKENS_KEY) || "{}");
+    return JSON.parse(sessionStorage.getItem(TOKENS_KEY) || "{}");
   } catch {
     return {};
   }
@@ -15,7 +15,7 @@ const roleFromPath = () => {
   if (path.startsWith("/admin")) return "ADMIN";
   if (path.startsWith("/team-owner")) return "TEAM_OWNER";
   if (path.startsWith("/player")) return "PLAYER";
-  return localStorage.getItem(ROLE_KEY);
+  return sessionStorage.getItem(ROLE_KEY);
 };
 
 export const authStorage = {
@@ -27,24 +27,18 @@ export const authStorage = {
   setAuth: (token, role) => {
     const tokens = readTokens();
     tokens[role] = token;
-    localStorage.setItem(TOKENS_KEY, JSON.stringify(tokens));
+    sessionStorage.setItem(TOKENS_KEY, JSON.stringify(tokens));
+    sessionStorage.setItem(ACTIVE_TOKEN_KEY, token);
     if (role) {
-      localStorage.setItem(ROLE_KEY, role);
       sessionStorage.setItem(ROLE_KEY, role);
     }
-    sessionStorage.setItem(ACTIVE_TOKEN_KEY, token);
   },
 
   clear: (role = roleFromPath()) => {
     const tokens = readTokens();
-    if (role) {
-      delete tokens[role];
-      localStorage.setItem(TOKENS_KEY, JSON.stringify(tokens));
-    }
+    if (role) delete tokens[role];
+    sessionStorage.setItem(TOKENS_KEY, JSON.stringify(tokens));
     sessionStorage.removeItem(ACTIVE_TOKEN_KEY);
     sessionStorage.removeItem(ROLE_KEY);
-    if (localStorage.getItem(ROLE_KEY) === role) {
-      localStorage.removeItem(ROLE_KEY);
-    }
   },
 };
